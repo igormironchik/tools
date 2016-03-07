@@ -1,0 +1,3 @@
+[submodule "3rdparty/QtArg"]
+	path = 3rdparty/QtArg
+	url = https://github.com/igormironchik/qtargparser.git
