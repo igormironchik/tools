@@ -22,7 +22,6 @@
 
 // Qt include.
 #include <QCoreApplication>
-#include <QFile>
 #include <QTextStream>
 #include <QRegExp>
 #include <QDebug>
