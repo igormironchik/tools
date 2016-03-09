@@ -37,10 +37,18 @@
 int main( int argc, char ** argv )
 {
 	QString authorName;
+	QString beforeDate;
+	QString afterDate;
 
 	try {
 		QtArg a( QLatin1Char( 'a' ), QLatin1String( "author" ),
 			QLatin1String( "Author's name." ), true, true );
+		QtArg after( QLatin1String( "after" ),
+			QLatin1String( "Show stat for commits more recent "
+						   "than a specific date." ), false, true );
+		QtArg before( QLatin1String( "before" ),
+			QLatin1String( "Show stat for commits older than "
+						   "a specific date." ), false, true );
 
 		QtArgHelp help;
 
@@ -52,6 +60,12 @@ int main( int argc, char ** argv )
 		cmd.parse();
 
 		authorName = a.value();
+
+		if( before.isDefined() )
+			beforeDate = before.value();
+
+		if( after.isDefined() )
+			afterDate = after.value();
 	}
 	catch( const QtArgHelpHasPrintedEx & )
 	{
@@ -68,8 +82,18 @@ int main( int argc, char ** argv )
 
 	QProcess p;
 
-	p.start( QLatin1String( "git" ), QStringList() << QLatin1String( "log" )
-		<< QLatin1String( "--shortstat" ) );
+	QStringList args;
+	args << QLatin1String( "log" );
+
+	if( !beforeDate.isEmpty() )
+		args << QString( "--before=" ) + beforeDate;
+
+	if( !afterDate.isEmpty() )
+		args << QString( "--after=" ) + afterDate;
+
+	args << QLatin1String( "--shortstat" );
+
+	p.start( QLatin1String( "git" ), args );
 
 	p.waitForFinished();
 
