@@ -56,6 +56,8 @@ int main( int argc, char ** argv )
 
 		cmd.addParseable( a );
 		cmd.addParseable( help );
+		cmd.addParseable( before );
+		cmd.addParseable( after );
 
 		cmd.parse();
 
