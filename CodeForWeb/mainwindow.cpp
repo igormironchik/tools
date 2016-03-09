@@ -83,6 +83,8 @@ void
 MainWindowPrivate::init()
 {
 	m_edit = new TextEdit( q );
+	m_edit->setPlaceholderText( MainWindow::tr( "Paste your code here "
+		"and then copy it..." ) );
 
 	q->setCentralWidget( m_edit );
 
