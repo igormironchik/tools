@@ -42,15 +42,18 @@ int main( int argc, char ** argv )
 
 	try {
 		QtArg a( QLatin1Char( 'a' ), QLatin1String( "author" ),
-			QLatin1String( "Author's name." ), true, true );
+			QLatin1String( "Author's name" ), true, true );
 		QtArg after( QLatin1String( "after" ),
 			QLatin1String( "Show stat for commits more recent "
-						   "than a specific date." ), false, true );
+						   "than a specific date" ), false, true );
 		QtArg before( QLatin1String( "before" ),
 			QLatin1String( "Show stat for commits older than "
-						   "a specific date." ), false, true );
+						   "a specific date" ), false, true );
 
 		QtArgHelp help;
+		help.printer()->setExecutableName( argv[ 0 ] );
+		help.printer()->setProgramDescription( QLatin1String( "Show statistics "
+			"for Git repository." ) );
 
 		QtArgCmdLine cmd( argc, argv );
 
