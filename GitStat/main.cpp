@@ -44,7 +44,7 @@ int main( int argc, char ** argv )
 	try {
 		QtMultiArg a( QLatin1Char( 'a' ), QLatin1String( "author" ),
 			QLatin1String( "Author's name. Can be defined more then one time "
-				"to specify different authors of the selction." ), true, true );
+				"to specify different authors of the selection." ), true, true );
 		QtArg after( QLatin1String( "after" ),
 			QLatin1String( "Show stat for commits more recent "
 						   "than a specific date. Use git format of the date." ),
