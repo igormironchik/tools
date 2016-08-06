@@ -2,7 +2,8 @@
 TEMPLATE = subdirs
 
 SUBDIRS =	CodeForWeb \
-			GitStat
+			GitStat \
+			LicenseChange
 
 binDir.commands = mkdir bin
 

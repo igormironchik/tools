@@ -1,7 +1,7 @@
 
 TEMPLATE = app
 QT += core gui widgets
-TARGET = CodeForWeb
+TARGET = LicenseChange
 DESTDIR = ../bin
 
 win32 {
