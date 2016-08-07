@@ -50,6 +50,8 @@ private slots:
 	void run();
 	//! Insert regexp.
 	void insertRegexp();
+	//! Name filters changed.
+	void nameFiltersChanged( const QString & filter );
 
 private:
 	friend class MainWindowPrivate;

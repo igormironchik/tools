@@ -199,6 +199,9 @@ MainWindowPrivate::init()
 	m_regexp->setShortcut( QKeySequence( "Ctrl+I" ) );
 
 	q->addToolBar( Qt::TopToolBarArea, tool );
+
+	MainWindow::connect( m_centralWidget->m_filter, &QLineEdit::textChanged,
+		q, &MainWindow::nameFiltersChanged );
 }
 
 
@@ -241,4 +244,13 @@ void
 MainWindow::insertRegexp()
 {
 
+}
+
+void
+MainWindow::nameFiltersChanged( const QString & filter )
+{
+	const QStringList names = filter.split( QLatin1Char( ' ' ),
+		QString::SkipEmptyParts );
+
+	d->m_centralWidget->m_model->setNameFilters( names );
 }
