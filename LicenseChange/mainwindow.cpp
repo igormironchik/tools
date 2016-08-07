@@ -156,6 +156,7 @@ private:
 		m_model->setNameFilters( QStringList() << "*.c"
 			<< "*.h" << "*.cpp" << "*.hpp" << "*.cc" << "*.cxx" << "*.hxx" );
 		m_model->setRootPath( QDir::rootPath() );
+		m_model->setReadOnly( true );
 
 		m_view->setModel( m_model );
 

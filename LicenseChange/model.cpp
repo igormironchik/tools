@@ -36,7 +36,8 @@
 class ModelPrivate {
 public:
 	ModelPrivate( Model * parent )
-		:	q( parent )
+		:	m_stop( true )
+		,	q( parent )
 	{
 	}
 
@@ -47,6 +48,8 @@ public:
 	QMap< QString, bool > m_map;
 	//! Indexes of directories that are loading now.
 	QList< QString > m_loading;
+	//! Stop loading?
+	bool m_stop;
 	//! Parent.
 	Model * q;
 }; // class ModelPrivate
@@ -88,13 +91,11 @@ Model::check( const QModelIndex & idx, bool checked, bool topLevel )
 
 	emit dataChanged( idx, idx );
 
-	bool stop = true;
-
 	if( isDir( idx ) )
 	{
 		if( canFetchMore( idx ) )
 		{
-			stop = false;
+			d->m_stop = false;
 
 			d->m_loading.append( filePath( idx ) );
 
@@ -109,7 +110,7 @@ Model::check( const QModelIndex & idx, bool checked, bool topLevel )
 		}
 	}
 
-	if( topLevel && stop )
+	if( topLevel && d->m_loading.isEmpty() )
 		emit loadingFinished();
 }
 
@@ -131,7 +132,7 @@ Model::clear()
 void
 Model::stopLoading()
 {
-	d->m_loading.clear();
+	d->m_stop = true;
 }
 
 QVariant
@@ -182,7 +183,8 @@ Model::pathReady( const QString & path )
 	{
 		d->m_loading.removeOne( path );
 
-		check( idx, true, false );
+		if( !d->m_stop )
+			check( idx, d->m_map[ path ], false );
 	}
 
 	if( d->m_loading.isEmpty() )
