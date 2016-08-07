@@ -37,6 +37,7 @@
 #include <QFileSystemModel>
 #include <QToolBar>
 #include <QAction>
+#include <QTextDocument>
 
 #include <QDebug>
 
@@ -118,7 +119,7 @@ private:
 		vb2->addWidget( sp2 );
 
 		m_newLicense = new TextEdit( w2 );
-		m_newLicense->setPlaceholderText( tr( "Insert new license here." ) );
+		m_newLicense->setPlaceholderText( tr( "Put new license here." ) );
 
 		vb2->addWidget( m_newLicense );
 
@@ -191,17 +192,25 @@ MainWindowPrivate::init()
 		MainWindow::tr( "Run" ), q, &MainWindow::run );
 	m_run->setShortcutContext( Qt::ApplicationShortcut );
 	m_run->setShortcut( QKeySequence( "Ctrl+R" ) );
+	m_run->setEnabled( false );
 
 	m_regexp = tool->addAction( QIcon( ":/img/code-function.png" ),
 		MainWindow::tr( "Insert Regular Expression" ),
 		q, &MainWindow::insertRegexp );
 	m_regexp->setShortcutContext( Qt::ApplicationShortcut );
-	m_regexp->setShortcut( QKeySequence( "Ctrl+I" ) );
+	m_regexp->setShortcut( QKeySequence( "Ctrl+X" ) );
+	m_regexp->setEnabled( false );
 
 	q->addToolBar( Qt::TopToolBarArea, tool );
 
 	MainWindow::connect( m_centralWidget->m_filter, &QLineEdit::textChanged,
 		q, &MainWindow::nameFiltersChanged );
+	MainWindow::connect( m_centralWidget->m_oldLicense, &TextEdit::focusReceived,
+		q, &MainWindow::oldLicenseReceivedFocus );
+	MainWindow::connect( m_centralWidget->m_oldLicense, &TextEdit::focusLost,
+		q, &MainWindow::oldLicenseLostFocus );
+	MainWindow::connect( m_centralWidget->m_oldLicense, &TextEdit::textChanged,
+		q, &MainWindow::oldLicenseChanged );
 }
 
 
@@ -253,4 +262,31 @@ MainWindow::nameFiltersChanged( const QString & filter )
 		QString::SkipEmptyParts );
 
 	d->m_centralWidget->m_model->setNameFilters( names );
+}
+
+void
+MainWindow::oldLicenseReceivedFocus()
+{
+	d->m_regexp->setEnabled( true );
+}
+
+void
+MainWindow::oldLicenseLostFocus()
+{
+	d->m_regexp->setEnabled( false );
+}
+
+void
+MainWindow::oldLicenseChanged()
+{
+	enableDisableRunButton();
+}
+
+void
+MainWindow::enableDisableRunButton()
+{
+	if( !d->m_centralWidget->m_oldLicense->document()->isEmpty() )
+		d->m_run->setEnabled( true );
+	else
+		d->m_run->setEnabled( false );
 }

@@ -52,6 +52,16 @@ private slots:
 	void insertRegexp();
 	//! Name filters changed.
 	void nameFiltersChanged( const QString & filter );
+	//! Old license received focus.
+	void oldLicenseReceivedFocus();
+	//! Old license lost focus.
+	void oldLicenseLostFocus();
+	//! Old license changed.
+	void oldLicenseChanged();
+
+private:
+	//! Enable/disable run button.
+	void enableDisableRunButton();
 
 private:
 	friend class MainWindowPrivate;

@@ -40,9 +40,19 @@ class TextEdit Q_DECL_FINAL
 {
 	Q_OBJECT
 
+signals:
+	//! Focus received.
+	void focusReceived();
+	//! Focus lost.
+	void focusLost();
+
 public:
 	TextEdit( QWidget * parent = Q_NULLPTR );
 	~TextEdit();
+
+protected:
+	void focusInEvent( QFocusEvent * event ) Q_DECL_OVERRIDE;
+	void focusOutEvent( QFocusEvent * event ) Q_DECL_OVERRIDE;
 
 private:
 	Q_DISABLE_COPY( TextEdit )

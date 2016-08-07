@@ -63,3 +63,19 @@ TextEdit::TextEdit( QWidget * parent )
 TextEdit::~TextEdit()
 {
 }
+
+void
+TextEdit::focusInEvent( QFocusEvent * event )
+{
+	emit focusReceived();
+
+	QPlainTextEdit::focusInEvent( event );
+}
+
+void
+TextEdit::focusOutEvent( QFocusEvent * event )
+{
+	emit focusLost();
+
+	QPlainTextEdit::focusOutEvent( event );
+}
