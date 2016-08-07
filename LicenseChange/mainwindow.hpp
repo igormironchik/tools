@@ -27,6 +27,7 @@
 #include <QMainWindow>
 #include <QScopedPointer>
 #include <QWidget>
+#include <QModelIndexList>
 
 
 //
@@ -62,6 +63,13 @@ private slots:
 private:
 	//! Enable/disable run button.
 	void enableDisableRunButton();
+	//! \return List of checked files.
+	QStringList checkedFiles();
+	//! \return List of checked files.
+	void checkedFiles( const QString & path, QStringList & res,
+		const QModelIndexList & cb, const QModelIndexList & cl,
+		const QStringList & ub, const QModelIndexList & ul,
+		const QStringList & filter );
 
 private:
 	friend class MainWindowPrivate;

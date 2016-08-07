@@ -38,8 +38,9 @@
 #include <QToolBar>
 #include <QAction>
 #include <QTextDocument>
-
-#include <QDebug>
+#include <QDir>
+#include <QFileInfo>
+#include <QRegExp>
 
 
 //
@@ -231,6 +232,12 @@ MainWindow::~MainWindow()
 void
 MainWindow::run()
 {
+	const QStringList files = checkedFiles();
+}
+
+QStringList
+MainWindow::checkedFiles()
+{
 	QScopedPointer< CheckableProxyModelState > state(
 		d->m_centralWidget->m_proxy->checkedState() );
 
@@ -242,11 +249,80 @@ MainWindow::run()
 
 	state->checkedBranchSourceModelIndexes( bindexes );
 
-	foreach( const QModelIndex & i, lindexes )
-		qDebug() << d->m_centralWidget->m_model->filePath( i );
+	QModelIndexList ulidx;
+
+	state->uncheckedLeafSourceModelIndexes( ulidx );
+
+	QModelIndexList ubidx;
+
+	state->uncheckedBranchSourceModelIndexes( ubidx );
+
+	QStringList ubpath;
+
+	foreach( const QModelIndex & i, ubidx )
+		ubpath.append( d->m_centralWidget->m_model->filePath( i ) );
+
+	const QStringList filter = d->m_centralWidget->m_filter->text()
+		.split( QLatin1Char( ' ' ), QString::SkipEmptyParts );
+
+	QStringList res;
 
 	foreach( const QModelIndex & i, bindexes )
-		qDebug() << d->m_centralWidget->m_model->filePath( i );
+		checkedFiles( d->m_centralWidget->m_model->filePath( i ),
+			res, bindexes, lindexes, ubpath, ulidx, filter );
+
+	QList< QRegExp > regexp;
+
+	foreach( const QString & f, filter )
+	{
+		QRegExp r;
+		r.setPatternSyntax( QRegExp::Wildcard );
+		r.setPattern( f );
+
+		regexp.append( r );
+	}
+
+	foreach( const QModelIndex & i, lindexes )
+	{
+		const QString file = d->m_centralWidget->m_model->filePath( i );
+		const QFileInfo info( file );
+
+		foreach( const QRegExp & r, regexp )
+		{
+			if( r.exactMatch( info.fileName() ) )
+				res.append( file );
+		}
+	}
+
+	foreach( const QModelIndex & i, ulidx )
+		res.removeOne( d->m_centralWidget->m_model->filePath( i ) );
+
+	return res;
+}
+
+void
+MainWindow::checkedFiles( const QString & path, QStringList & res,
+	const QModelIndexList & cb, const QModelIndexList & cl,
+	const QStringList & ub, const QModelIndexList & ul,
+	const QStringList & filter )
+{
+	QDir dir( path );
+
+	const QFileInfoList names = dir.entryInfoList( filter,
+		QDir::NoDotAndDotDot | QDir::AllEntries );
+
+	foreach( const QFileInfo & i, names )
+	{
+		if( i.isDir() )
+		{
+			const QString p = i.absolutePath();
+
+			if( !ub.contains( p ) )
+				checkedFiles( p, res, cb, cl, ub, ul, filter );
+		}
+		else
+			res.append( i.absoluteFilePath() );
+	}
 }
 
 void
