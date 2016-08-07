@@ -11,13 +11,15 @@ win32 {
 HEADERS = mainwindow.hpp \
     textedit.hpp \
     proxy.hpp \
-	delayedexecutiontimer.hpp
+	delayedexecutiontimer.hpp \
+    worker.hpp
 
 SOURCES = main.cpp \
 	mainwindow.cpp \
     textedit.cpp \
     proxy.cpp \
-	delayedexecutiontimer.cpp
+	delayedexecutiontimer.cpp \
+    worker.cpp
 			
 RESOURCES = resources.qrc
 
