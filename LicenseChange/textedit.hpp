@@ -35,7 +35,7 @@
 class TextEditPrivate;
 
 //! Text editor.
-class TextEdit
+class TextEdit Q_DECL_FINAL
 	:	public QPlainTextEdit
 {
 	Q_OBJECT

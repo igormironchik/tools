@@ -23,7 +23,7 @@
 // LicenseChange include.
 #include "mainwindow.hpp"
 #include "textedit.hpp"
-#include "model.hpp"
+#include "proxy.hpp"
 
 // Qt include.
 #include <QApplication>
@@ -34,79 +34,11 @@
 #include <QTreeView>
 #include <QLineEdit>
 #include <QDir>
-#include <QProgressBar>
-#include <QToolButton>
-#include <QVariantAnimation>
+#include <QFileSystemModel>
+#include <QToolBar>
+#include <QAction>
 
-
-//
-// DirectoryLoadingProgress
-//
-
-DirectoryLoadingProgress::DirectoryLoadingProgress( QWidget * parent )
-	:	QWidget( parent )
-	,	m_progress( Q_NULLPTR )
-	,	m_anim( Q_NULLPTR )
-{
-	QHBoxLayout * l = new QHBoxLayout( this );
-
-	m_progress = new QProgressBar( this );
-	m_progress->setMinimum( 0 );
-	m_progress->setMaximum( 100 );
-	l->addWidget( m_progress );
-
-	m_anim = new QVariantAnimation( this );
-	m_anim->setKeyValueAt( 0.0, 0 );
-	m_anim->setKeyValueAt( 0.5, 75 );
-	m_anim->setKeyValueAt( 1.0, 0 );
-	m_anim->setDuration( 1500 );
-	m_anim->setLoopCount( -1 );
-
-	QToolButton * b = new QToolButton( this );
-	b->setIconSize( QSize( 16, 16 ) );
-	b->setIcon( QIcon( ":/img/dialog-cancel.png" ) );
-	l->addWidget( b );
-
-	connect( b, &QToolButton::clicked,
-		this, &DirectoryLoadingProgress::cancel );
-	connect( m_anim, &QVariantAnimation::valueChanged,
-		this, &DirectoryLoadingProgress::animValueChanged );
-
-}
-
-DirectoryLoadingProgress::~DirectoryLoadingProgress()
-{
-}
-
-void
-DirectoryLoadingProgress::start()
-{
-	m_anim->start();
-
-	show();
-}
-
-void
-DirectoryLoadingProgress::finish()
-{
-	m_anim->stop();
-
-	hide();
-}
-
-void
-DirectoryLoadingProgress::cancel()
-{
-	finish();
-
-	emit cancelLoading();
-}
-
-void
-DirectoryLoadingProgress::animValueChanged( const QVariant & value )
-{
-	m_progress->setValue( value.toInt() );
-}
+#include <QDebug>
 
 
 //
@@ -123,8 +55,8 @@ public:
 		,	m_oldLicense( Q_NULLPTR )
 		,	m_newLicense( Q_NULLPTR )
 		,	m_filter( Q_NULLPTR )
+		,	m_proxy( Q_NULLPTR )
 		,	m_model( Q_NULLPTR )
-		,	m_progress( Q_NULLPTR )
 	{
 		init();
 	}
@@ -152,17 +84,16 @@ private:
 		m_view = new QTreeView( w1 );
 		vb1->addWidget( m_view );
 
-		m_model = new Model( this );
+		m_model = new QFileSystemModel( this );
 		m_model->setNameFilters( QStringList() << "*.c"
 			<< "*.h" << "*.cpp" << "*.hpp" << "*.cc" << "*.cxx" << "*.hxx" );
 		m_model->setRootPath( QDir::rootPath() );
 		m_model->setReadOnly( true );
 
-		m_view->setModel( m_model );
+		m_proxy = new CheckableProxyModel( this );
+		m_proxy->setSourceModel( m_model );
 
-		m_progress = new DirectoryLoadingProgress( w1 );
-		vb1->addWidget( m_progress );
-		m_progress->finish();
+		m_view->setModel( m_proxy );
 
 		l->addWidget( w1 );
 
@@ -198,13 +129,6 @@ private:
 
 		sp1->addWidget( w1 );
 		sp1->addWidget( w2 );
-
-		connect( m_progress, &DirectoryLoadingProgress::cancelLoading,
-			m_model, &Model::stopLoading );
-		connect( m_model, &Model::loadingStarted,
-			m_progress, &DirectoryLoadingProgress::start );
-		connect( m_model, &Model::loadingFinished,
-			m_progress, &DirectoryLoadingProgress::finish );
 	}
 
 public:
@@ -216,10 +140,10 @@ public:
 	TextEdit * m_newLicense;
 	//! Filter.
 	QLineEdit * m_filter;
-	//! Model.
-	Model * m_model;
-	//! Progress.
-	DirectoryLoadingProgress * m_progress;
+	//! Proxy model.
+	CheckableProxyModel * m_proxy;
+	//! Files model.
+	QFileSystemModel * m_model;
 }; // class CentralWidget
 
 
@@ -231,6 +155,8 @@ class MainWindowPrivate {
 public:
 	MainWindowPrivate( MainWindow * parent )
 		:	m_centralWidget( Q_NULLPTR )
+		,	m_run( Q_NULLPTR )
+		,	m_regexp( Q_NULLPTR )
 		,	q( parent )
 	{
 	}
@@ -240,6 +166,10 @@ public:
 
 	//! Central widget.
 	CentralWidget * m_centralWidget;
+	//! Run action.
+	QAction * m_run;
+	//! Insert regexp action.
+	QAction * m_regexp;
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
@@ -254,6 +184,21 @@ MainWindowPrivate::init()
 	m_centralWidget = new CentralWidget( q );
 
 	q->setCentralWidget( m_centralWidget );
+
+	QToolBar * tool = new QToolBar( MainWindow::tr( "Tools" ), q );
+
+	m_run = tool->addAction( QIcon( ":/img/arrow-right.png" ),
+		MainWindow::tr( "Run" ), q, &MainWindow::run );
+	m_run->setShortcutContext( Qt::ApplicationShortcut );
+	m_run->setShortcut( QKeySequence( "Ctrl+R" ) );
+
+	m_regexp = tool->addAction( QIcon( ":/img/code-function.png" ),
+		MainWindow::tr( "Insert Regular Expression" ),
+		q, &MainWindow::insertRegexp );
+	m_regexp->setShortcutContext( Qt::ApplicationShortcut );
+	m_regexp->setShortcut( QKeySequence( "Ctrl+I" ) );
+
+	q->addToolBar( Qt::TopToolBarArea, tool );
 }
 
 
@@ -269,4 +214,31 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+}
+
+void
+MainWindow::run()
+{
+	QScopedPointer< CheckableProxyModelState > state(
+		d->m_centralWidget->m_proxy->checkedState() );
+
+	QModelIndexList lindexes;
+
+	state->checkedLeafSourceModelIndexes( lindexes );
+
+	QModelIndexList bindexes;
+
+	state->checkedBranchSourceModelIndexes( bindexes );
+
+	foreach( const QModelIndex & i, lindexes )
+		qDebug() << d->m_centralWidget->m_model->filePath( i );
+
+	foreach( const QModelIndex & i, bindexes )
+		qDebug() << d->m_centralWidget->m_model->filePath( i );
+}
+
+void
+MainWindow::insertRegexp()
+{
+
 }

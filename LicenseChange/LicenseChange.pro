@@ -8,14 +8,16 @@ win32 {
     RC_FILE = app.rc
 }
 
-HEADERS =	mainwindow.hpp \
-    model.hpp \
-    textedit.hpp
+HEADERS = mainwindow.hpp \
+    textedit.hpp \
+    proxy.hpp \
+	delayedexecutiontimer.hpp
 
-SOURCES =	main.cpp \
-			mainwindow.cpp \
-    model.cpp \
-    textedit.cpp
+SOURCES = main.cpp \
+	mainwindow.cpp \
+    textedit.cpp \
+    proxy.cpp \
+	delayedexecutiontimer.cpp
 			
 RESOURCES = resources.qrc
 
