@@ -20,25 +20,34 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// LicenseChange include.
-#include "mainwindow.hpp"
+#ifndef LICENSECHANGE__TEXTEDIT_HPP__INCLUDED
+#define LICENSECHANGE__TEXTEDIT_HPP__INCLUDED
 
 // Qt include.
-#include <QApplication>
+#include <QPlainTextEdit>
+#include <QScopedPointer>
 
 
-int main( int argc, char ** argv )
+//
+// TextEdit
+//
+
+class TextEditPrivate;
+
+//! Text editor.
+class TextEdit
+	:	public QPlainTextEdit
 {
-	QApplication app( argc, argv );
+	Q_OBJECT
 
-	QIcon appIcon( ":/img/app_48x48.png" );
-	appIcon.addFile( ":/img/app_32x32.png" );
-	appIcon.addFile( ":/img/app_22x22.png" );
-	appIcon.addFile( ":/img/app_16x16.png" );
-	app.setWindowIcon( appIcon );
+public:
+	TextEdit( QWidget * parent = Q_NULLPTR );
+	~TextEdit();
 
-	MainWindow w;
-	w.showMaximized();
+private:
+	Q_DISABLE_COPY( TextEdit )
 
-	return app.exec();
-}
+	QScopedPointer< TextEditPrivate > d;
+}; // class TextEdit
+
+#endif // LICENSECHANGE__TEXTEDIT_HPP__INCLUDED

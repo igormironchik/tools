@@ -8,10 +8,14 @@ win32 {
     RC_FILE = app.rc
 }
 
-HEADERS =	mainwindow.hpp
+HEADERS =	mainwindow.hpp \
+    model.hpp \
+    textedit.hpp
 
 SOURCES =	main.cpp \
-			mainwindow.cpp
+			mainwindow.cpp \
+    model.cpp \
+    textedit.cpp
 			
 RESOURCES = resources.qrc
 

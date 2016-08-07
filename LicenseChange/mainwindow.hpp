@@ -26,6 +26,52 @@
 // Qt include.
 #include <QMainWindow>
 #include <QScopedPointer>
+#include <QWidget>
+
+QT_BEGIN_NAMESPACE
+class QProgressBar;
+class QVariantAnimation;
+QT_END_NAMESPACE
+
+
+//
+// DirectoryLoadingProgress
+//
+
+//! Progress of loading of the directories.
+class DirectoryLoadingProgress Q_DECL_FINAL
+	:	public QWidget
+{
+	Q_OBJECT
+
+signals:
+	//! Cancle loading of directories.
+	void cancelLoading();
+
+public:
+	DirectoryLoadingProgress( QWidget * parent = Q_NULLPTR );
+	~DirectoryLoadingProgress();
+
+public slots:
+	//! Start.
+	void start();
+	//! Finish.
+	void finish();
+
+private slots:
+	//! Cancel loading.
+	void cancel();
+	//! Animation.
+	void animValueChanged( const QVariant & value );
+
+private:
+	Q_DISABLE_COPY( DirectoryLoadingProgress )
+
+	//! Progress bar.
+	QProgressBar * m_progress;
+	//! Animation.
+	QVariantAnimation * m_anim;
+}; // class DirectoryLoadingProgress
 
 
 //
@@ -35,7 +81,7 @@
 class MainWindowPrivate;
 
 //! Main window.
-class MainWindow
+class MainWindow Q_DECL_FINAL
 	:	public QMainWindow
 {
 	Q_OBJECT

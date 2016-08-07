@@ -21,24 +21,45 @@
 */
 
 // LicenseChange include.
-#include "mainwindow.hpp"
-
-// Qt include.
-#include <QApplication>
+#include "textedit.hpp"
 
 
-int main( int argc, char ** argv )
+//
+// TextEditPrivate
+//
+
+class TextEditPrivate {
+public:
+	TextEditPrivate( TextEdit * parent )
+		:	q( parent )
+	{
+	}
+
+	//! Init.
+	void init();
+
+	//! Parent.
+	TextEdit * q;
+}; // class TextEditPrivate
+
+void
+TextEditPrivate::init()
 {
-	QApplication app( argc, argv );
 
-	QIcon appIcon( ":/img/app_48x48.png" );
-	appIcon.addFile( ":/img/app_32x32.png" );
-	appIcon.addFile( ":/img/app_22x22.png" );
-	appIcon.addFile( ":/img/app_16x16.png" );
-	app.setWindowIcon( appIcon );
+}
 
-	MainWindow w;
-	w.showMaximized();
 
-	return app.exec();
+//
+// TextEdit
+//
+
+TextEdit::TextEdit( QWidget * parent )
+	:	QPlainTextEdit( parent )
+	,	d( new TextEditPrivate( this ) )
+{
+	d->init();
+}
+
+TextEdit::~TextEdit()
+{
 }
