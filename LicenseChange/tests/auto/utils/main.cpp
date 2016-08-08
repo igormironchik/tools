@@ -33,9 +33,65 @@ class Utils
 	Q_OBJECT
 
 private slots:
-	void testAllIsOkWithTrueAndFalse()
+	void test_splitData()
 	{
-	} // testAllIsOkWithTrueAndFalse
+		const QString data = QLatin1String(
+			"word1 word2\r"
+			"word3 word4\r\n"
+			"word5 word6\n"
+			" word7" );
+
+		Words w = splitData( data );
+
+		QCOMPARE( w.count(), 10 );
+
+		QCOMPARE( w.at( 0 ).m_pos, 0 );
+		QCOMPARE( w.at( 0 ).m_posWithSpaces, 0 );
+		QCOMPARE( w.at( 0 ).m_st.word(), QLatin1String( "word1" ) );
+		QCOMPARE( w.at( 0 ).m_st.type(), Statement::Word );
+
+		QCOMPARE( w.at( 1 ).m_pos, 6 );
+		QCOMPARE( w.at( 1 ).m_posWithSpaces, 5 );
+		QCOMPARE( w.at( 1 ).m_st.word(), QLatin1String( "word2" ) );
+		QCOMPARE( w.at( 1 ).m_st.type(), Statement::Word );
+
+		QCOMPARE( w.at( 2 ).m_pos, -1 );
+		QCOMPARE( w.at( 2 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 2 ).m_st.type(), Statement::LineEnding );
+
+		QCOMPARE( w.at( 3 ).m_pos, 12 );
+		QCOMPARE( w.at( 3 ).m_posWithSpaces, 12 );
+		QCOMPARE( w.at( 3 ).m_st.word(), QLatin1String( "word3" ) );
+		QCOMPARE( w.at( 3 ).m_st.type(), Statement::Word );
+
+		QCOMPARE( w.at( 4 ).m_pos, 18 );
+		QCOMPARE( w.at( 4 ).m_posWithSpaces, 17 );
+		QCOMPARE( w.at( 4 ).m_st.word(), QLatin1String( "word4" ) );
+		QCOMPARE( w.at( 4 ).m_st.type(), Statement::Word );
+
+		QCOMPARE( w.at( 5 ).m_pos, -1 );
+		QCOMPARE( w.at( 5 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 5 ).m_st.type(), Statement::LineEnding );
+
+		QCOMPARE( w.at( 6 ).m_pos, 25 );
+		QCOMPARE( w.at( 6 ).m_posWithSpaces, 25 );
+		QCOMPARE( w.at( 6 ).m_st.word(), QLatin1String( "word5" ) );
+		QCOMPARE( w.at( 6 ).m_st.type(), Statement::Word );
+
+		QCOMPARE( w.at( 7 ).m_pos, 31 );
+		QCOMPARE( w.at( 7 ).m_posWithSpaces, 30 );
+		QCOMPARE( w.at( 7 ).m_st.word(), QLatin1String( "word6" ) );
+		QCOMPARE( w.at( 7 ).m_st.type(), Statement::Word );
+
+		QCOMPARE( w.at( 8 ).m_pos, -1 );
+		QCOMPARE( w.at( 8 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 8 ).m_st.type(), Statement::LineEnding );
+
+		QCOMPARE( w.at( 9 ).m_pos, 38 );
+		QCOMPARE( w.at( 9 ).m_posWithSpaces, 37 );
+		QCOMPARE( w.at( 9 ).m_st.word(), QLatin1String( "word7" ) );
+		QCOMPARE( w.at( 9 ).m_st.type(), Statement::Word );
+	}
 
 }; // class BoolScalarTest
 

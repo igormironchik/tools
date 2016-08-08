@@ -80,7 +80,32 @@ Words splitData( const QString & data )
 	{
 		const QChar ch = data.at( i );
 
-		if( ch.isSpace() )
+		if( ch != c_r && ch != c_n && !ch.isSpace() )
+		{
+			if( word.isEmpty() )
+				pos = i;
+
+			word.append( ch );
+		}
+		else if( ch == c_r || ch == c_n )
+		{
+			if( ch == c_r && ( i + 1 ) < data.length() &&
+				data.at( i + 1 ) == c_n )
+					++i;
+
+			if( !word.isEmpty() )
+			{
+				words.append( { Statement( Statement::Word, word ),
+					pos, posWithSpaces } );
+
+				word.clear();
+
+				posWithSpaces = i + 1;
+			}
+
+			words.append( { Statement::LineEnding, -1, -1 } );
+		}
+		else if( ch.isSpace() )
 		{
 			if( !word.isEmpty() )
 			{
@@ -91,21 +116,6 @@ Words splitData( const QString & data )
 
 				posWithSpaces = i;
 			}
-		}
-		else if( ch != c_r && ch != c_n )
-		{
-			if( word.isEmpty() )
-				pos = i;
-
-			word.append( ch );
-		}
-		else
-		{
-			if( ch == c_r && ( i + 1 ) < data.length() &&
-				data.at( i + 1 ) == c_n )
-					++i;
-
-			words.append( { Statement::LineEnding, -1, -1 } );
 		}
 	}
 
