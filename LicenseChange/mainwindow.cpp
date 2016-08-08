@@ -110,8 +110,8 @@ private:
 
 		m_oldLicense = new TextEdit( w2 );
 		m_oldLicense->setPlaceholderText( tr( "Put old license here. "
-			"You can use regular expressions here, to insert regular expression "
-			"use tool bar." ) );
+			"You can use special commands \"skip line\" and \"skip word\" "
+			"here, to insert them use tool bar." ) );
 
 		vb2->addWidget( m_oldLicense );
 
