@@ -22,12 +22,57 @@
 
 // LicenseChange include.
 #include "worker.hpp"
+#include "textedit.hpp"
 
 // Qt include.
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QList>
-#include <QRegExp>
+
+
+//
+// Statement
+//
+
+//! Statement in the license or text file.
+class Statement Q_DECL_FINAL {
+public:
+	//! Type of the statement.
+	enum Type {
+		//! Word.
+		Word,
+		//! Skip line.
+		SkipLine,
+		//! Skip word.
+		SkipWord,
+		//! Line ending.
+		LineEnding
+	}; // enum Type
+
+	Statement( Type type, const QString & word = QString() )
+		:	m_type( type )
+		,	m_word( word )
+	{
+	}
+
+	//! \return Type.
+	Type type() const
+	{
+		return m_type;
+	}
+
+	//! \return Word.
+	const QString & word() const
+	{
+		return m_word;
+	}
+
+private:
+	//! Type.
+	Type m_type;
+	//! Word.
+	QString m_word;
+}; // class Statement
 
 
 //
@@ -51,9 +96,7 @@ public:
 	//! Files.
 	QStringList m_files;
 	//! To replace.
-	QStringList m_toReplace;
-	//! Regular expressions.
-	QList< QRegExp > m_regs;
+	QList< Statement > m_toReplace;
 	//! Old license.
 	QTextDocument * m_oldLicense;
 	//! New license.
@@ -62,70 +105,51 @@ public:
 	Worker * q;
 }; // class WorkerPrivate
 
+static const QChar c_r = QLatin1Char( '\r' );
+static const QChar c_n = QLatin1Char( '\n' );
+static const QChar c_or = QChar::ObjectReplacementCharacter;
+
 void
 WorkerPrivate::init()
 {
 	QTextCursor c( m_oldLicense );
-	c.movePosition( QTextCursor::Start );
 
 	const QString data = m_oldLicense->toPlainText();
-	QString regexp;
+
 	QString word;
 
-	c.movePosition( QTextCursor::NextCharacter );
-
-	while( !c.atEnd() )
+	for( int i = 0; i < data.length(); ++i )
 	{
-		if( c.charFormat().background().color() == Qt::blue )
+		const QChar ch = data.at( i );
+
+		if( ch == c_r )
 		{
-			regexp.append( data.at( c.position() - 1 ) );
+			if( i + 1 < data.length() && data.at( i + 1 ) == c_n )
+				++i;
 
-			if( !word.isEmpty() )
-			{
-				m_toReplace.append( word );
+			m_toReplace.append( Statement::LineEnding );
+		}
+		else if( ch == c_n )
+			m_toReplace.append( Statement::LineEnding );
+		else if( ch == c_or )
+		{
+			c.setPosition( i + 1 );
 
-				word.clear();
-			}
+			QTextImageFormat fmt = c.charFormat().toImageFormat();
+
+			if( fmt.name() == c_skipLine )
+				m_toReplace.append( Statement::SkipLine );
+			else if( fmt.name() == c_skipWord )
+				m_toReplace.append( Statement::SkipWord );
+		}
+		else if( ch.isSpace() )
+		{
+			m_toReplace.append( Statement( Statement::Word, word ) );
+
+			word.clear();
 		}
 		else
-		{
-			const QChar ch = data.at( c.position() - 1 );
-
-			if( !ch.isSpace() )
-				word.append( ch );
-			else if( !word.isEmpty() )
-			{
-				m_toReplace.append( word );
-
-				word.clear();
-			}
-
-			if( !regexp.isEmpty() )
-			{
-				m_regs.append( QRegExp( regexp ) );
-
-				m_toReplace.append( QString() );
-
-				regexp.clear();
-			}
-		}
-
-		c.movePosition( QTextCursor::NextCharacter );
-	}
-
-	if( c.charFormat().background().color() == Qt::blue )
-		regexp.append( data.at( c.position() - 1 ) );
-	else
-		word.append( data.at( c.position() - 1 ) );
-
-	if( !word.isEmpty() )
-		m_toReplace.append( word );
-
-	if( !regexp.isEmpty() )
-	{
-		m_regs.append( QRegExp( regexp ) );
-
-		m_toReplace.append( QString() );
+			word.append( ch );
 	}
 
 	m_oldLicense = Q_NULLPTR;

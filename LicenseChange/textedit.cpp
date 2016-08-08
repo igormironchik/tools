@@ -48,12 +48,12 @@ TextEditPrivate::init()
 	QImage skipLine( QLatin1String( ":/img/code-function.png" ) );
 
 	q->document()->addResource( QTextDocument::ImageResource,
-		QUrl( "data://skip-line.png" ), QVariant( skipLine ) );
+		QUrl( c_skipLine ), QVariant( skipLine ) );
 
 	QImage skipWord( QLatin1String( ":/img/code-variable.png" ) );
 
 	q->document()->addResource( QTextDocument::ImageResource,
-		QUrl( "data://skip-word.png" ), QVariant( skipWord ) );
+		QUrl( c_skipWord ), QVariant( skipWord ) );
 }
 
 
@@ -76,14 +76,14 @@ void
 TextEdit::insertSkipLine()
 {
 	QTextCursor c = textCursor();
-	c.insertImage( QLatin1String( "data://skip-line.png" ) );
+	c.insertImage( c_skipLine );
 }
 
 void
 TextEdit::insertSkipWord()
 {
 	QTextCursor c = textCursor();
-	c.insertImage( QLatin1String( "data://skip-word.png" ) );
+	c.insertImage( c_skipWord );
 }
 
 void

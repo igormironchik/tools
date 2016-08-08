@@ -28,6 +28,10 @@
 #include <QScopedPointer>
 
 
+static const QString c_skipLine = QLatin1String( "data://skip-line.png" );
+static const QString c_skipWord = QLatin1String( "data://skip-word.png" );
+
+
 //
 // TextEdit
 //
