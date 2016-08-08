@@ -127,12 +127,35 @@ WorkerPrivate::init()
 			if( i + 1 < data.length() && data.at( i + 1 ) == c_n )
 				++i;
 
+			if( !word.isEmpty() )
+			{
+				m_toReplace.append( Statement( Statement::Word, word ) );
+
+				word.clear();
+			}
+
 			m_toReplace.append( Statement::LineEnding );
 		}
 		else if( ch == c_n )
+		{
+			if( !word.isEmpty() )
+			{
+				m_toReplace.append( Statement( Statement::Word, word ) );
+
+				word.clear();
+			}
+
 			m_toReplace.append( Statement::LineEnding );
+		}
 		else if( ch == c_or )
 		{
+			if( !word.isEmpty() )
+			{
+				m_toReplace.append( Statement( Statement::Word, word ) );
+
+				word.clear();
+			}
+
 			c.setPosition( i + 1 );
 
 			QTextImageFormat fmt = c.charFormat().toImageFormat();
@@ -144,9 +167,12 @@ WorkerPrivate::init()
 		}
 		else if( ch.isSpace() )
 		{
-			m_toReplace.append( Statement( Statement::Word, word ) );
+			if( !word.isEmpty() )
+			{
+				m_toReplace.append( Statement( Statement::Word, word ) );
 
-			word.clear();
+				word.clear();
+			}
 		}
 		else
 			word.append( ch );
