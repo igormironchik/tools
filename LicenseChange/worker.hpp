@@ -44,6 +44,10 @@ class Worker
 {
 	Q_OBJECT
 
+signals:
+	//! Processed file.
+	void processedFile( int num );
+
 public:
 	Worker( const QStringList & files, QTextDocument * oldLicense,
 		QTextDocument * newLicense, QObject * parent = Q_NULLPTR );

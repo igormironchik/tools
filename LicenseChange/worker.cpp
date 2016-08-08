@@ -28,6 +28,7 @@
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QList>
+#include <QFile>
 
 
 //
@@ -46,7 +47,9 @@ public:
 		//! Skip word.
 		SkipWord,
 		//! Line ending.
-		LineEnding
+		LineEnding,
+		//! Skip first spaces.
+		SkipFirstSpaces
 	}; // enum Type
 
 	Statement( Type type, const QString & word = QString() )
@@ -117,6 +120,9 @@ WorkerPrivate::init()
 	const QString data = m_oldLicense->toPlainText();
 
 	QString word;
+
+	if( !data.isEmpty() && data.at( 0 ).isSpace() )
+		m_toReplace.append( Statement::SkipFirstSpaces );
 
 	for( int i = 0; i < data.length(); ++i )
 	{
@@ -198,8 +204,121 @@ Worker::~Worker()
 {
 }
 
+
+//
+// FileCloser
+//
+
+class FileCloser Q_DECL_FINAL {
+public:
+	FileCloser( QFile & file, QFile::OpenMode mode )
+		:	m_file( file )
+	{
+		m_file.open( mode );
+	}
+
+	~FileCloser()
+	{
+		m_file.close();
+	}
+
+private:
+	//! File.
+	QFile & m_file;
+}; // class FileCloser
+
+
+//
+// WordWithPlace
+//
+
+struct WordWithPlace {
+	//! Statement.
+	Statement m_st;
+	//! Postion of the word.
+	int m_pos;
+	//! Poistion of the word with previous spaces.
+	int m_posWithSpaces;
+}; // struct WordWithPlace
+
+using Words = QList< WordWithPlace >;
+
+
+Words splitData( const QString & data )
+{
+	Words words;
+
+	QString word;
+
+	int pos = 0;
+	int posWithSpaces = 0;
+
+	for( int i = 0; i < data.length(); ++i )
+	{
+		const QChar ch = data.at( i );
+
+		if( ch.isSpace() )
+		{
+			if( !word.isEmpty() )
+			{
+				words.append( { Statement( Statement::Word, word ),
+					pos, posWithSpaces } );
+
+				word.clear();
+
+				posWithSpaces = i;
+			}
+		}
+		else if( ch != c_r && ch != c_n )
+		{
+			if( word.isEmpty() )
+				pos = i;
+
+			word.append( ch );
+		}
+		else
+		{
+			if( ch == c_r && ( i + 1 ) < data.length() &&
+				data.at( i + 1 ) == c_n )
+					++i;
+
+			words.append( { Statement::LineEnding, -1, -1 } );
+		}
+	}
+
+	if( !word.isEmpty() )
+		words.append( { Statement( Statement::Word, word ),
+			pos, posWithSpaces } );
+
+	return words;
+} // splitData
+
 void
 Worker::run()
 {
+	int i = 1;
 
+	foreach( const QString & fileName, d->m_files )
+	{
+		QString data;
+
+		{
+			QFile file( fileName );
+
+			FileCloser fc( file, QFile::ReadOnly );
+
+			data = file.readAll();
+		}
+
+		Words words = splitData( data );
+
+		for( int i = 0; i < words.size(); ++i )
+		{
+
+		}
+
+		emit processedFile( i );
+
+		++i;
+	}
 }
