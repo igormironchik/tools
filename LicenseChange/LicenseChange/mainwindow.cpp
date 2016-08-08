@@ -24,6 +24,7 @@
 #include "mainwindow.hpp"
 #include "textedit.hpp"
 #include "proxy.hpp"
+#include "worker.hpp"
 
 // Qt include.
 #include <QApplication>
@@ -41,6 +42,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QRegExp>
+
+#include <QDebug>
 
 
 //
@@ -112,6 +115,7 @@ private:
 		m_oldLicense->setPlaceholderText( tr( "Put old license here. "
 			"You can use special commands \"skip line\" and \"skip word\" "
 			"here, to insert them use tool bar." ) );
+		m_oldLicense->setTabStopWidth( 40 );
 
 		vb2->addWidget( m_oldLicense );
 
@@ -121,6 +125,7 @@ private:
 
 		m_newLicense = new TextEdit( w2 );
 		m_newLicense->setPlaceholderText( tr( "Put new license here." ) );
+		m_newLicense->setTabStopWidth( 40 );
 
 		vb2->addWidget( m_newLicense );
 
@@ -160,6 +165,7 @@ public:
 		,	m_run( Q_NULLPTR )
 		,	m_skipLine( Q_NULLPTR )
 		,	m_skipWord( Q_NULLPTR )
+		,	m_worker( Q_NULLPTR )
 		,	q( parent )
 	{
 	}
@@ -175,6 +181,8 @@ public:
 	QAction * m_skipLine;
 	//! Skip word action.
 	QAction * m_skipWord;
+	//! Worker.
+	Worker * m_worker;
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
@@ -245,6 +253,22 @@ void
 MainWindow::run()
 {
 	const QStringList files = checkedFiles();
+
+	if( !files.isEmpty() )
+	{
+		d->m_worker = new Worker( files,
+			d->m_centralWidget->m_oldLicense->document(),
+			d->m_centralWidget->m_newLicense->document(), this );
+
+		connect( d->m_worker, &Worker::processedFile,
+			this, &MainWindow::fileProcessed );
+		connect( d->m_worker, &Worker::done,
+			this, &MainWindow::jobDone );
+		connect( d->m_worker, &Worker::finished,
+			this, &MainWindow::threadFinished );
+
+		d->m_worker->start();
+	}
 }
 
 QStringList
@@ -385,4 +409,24 @@ MainWindow::enableDisableRunButton()
 		d->m_run->setEnabled( true );
 	else
 		d->m_run->setEnabled( false );
+}
+
+void
+MainWindow::fileProcessed( int num )
+{
+	qDebug() << num;
+}
+
+void
+MainWindow::jobDone( int found, int total )
+{
+	qDebug() << "found" << found << "total" << total;
+}
+
+void
+MainWindow::threadFinished()
+{
+	d->m_worker->deleteLater();
+
+	d->m_worker = Q_NULLPTR;
 }

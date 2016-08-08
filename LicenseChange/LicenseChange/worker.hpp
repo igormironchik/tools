@@ -48,7 +48,8 @@ signals:
 	//! Processed file.
 	void processedFile( int num );
 	//! Job done.
-	void done( int countOfFilesWithChangedLicense );
+	void done( int countOfFilesWithChangedLicense,
+		int totalFilesCount );
 
 public:
 	Worker( const QStringList & files, QTextDocument * oldLicense,

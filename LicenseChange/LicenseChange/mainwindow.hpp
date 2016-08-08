@@ -61,6 +61,12 @@ private slots:
 	void oldLicenseLostFocus();
 	//! Old license changed.
 	void oldLicenseChanged();
+	//! File was processed.
+	void fileProcessed( int num );
+	//! Job done.
+	void jobDone( int found, int total );
+	//! Thread finished.
+	void threadFinished();
 
 private:
 	//! Enable/disable run button.

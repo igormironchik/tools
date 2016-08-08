@@ -1,26 +1,11 @@
 
-TEMPLATE = app
-QT += core gui widgets
-TARGET = LicenseChange
-DESTDIR = ../bin
+TEMPLATE = subdirs
 
-win32 {
-    RC_FILE = app.rc
-}
-
-HEADERS = mainwindow.hpp \
-    textedit.hpp \
-    proxy.hpp \
-	delayedexecutiontimer.hpp \
-    worker.hpp
-
-SOURCES = main.cpp \
-	mainwindow.cpp \
-    textedit.cpp \
-    proxy.cpp \
-	delayedexecutiontimer.cpp \
-    worker.cpp
-			
-RESOURCES = resources.qrc
+SUBDIRS = LicenseChange \
+	tests \
+	utils
 
 OTHER_FILES = README.md
+	
+LicenseChange.depends = utils
+tests.depends = utils

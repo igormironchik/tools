@@ -23,62 +23,15 @@
 // LicenseChange include.
 #include "worker.hpp"
 #include "textedit.hpp"
+#include "utils.hpp"
 
 // Qt include.
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QList>
-#include <QFile>
 
 // C++ include.
 #include <algorithm>
-
-
-//
-// Statement
-//
-
-//! Statement in the license or text file.
-class Statement Q_DECL_FINAL {
-public:
-	//! Type of the statement.
-	enum Type {
-		//! Word.
-		Word,
-		//! Skip line.
-		SkipLine,
-		//! Skip word.
-		SkipWord,
-		//! Line ending.
-		LineEnding,
-		//! Skip first spaces.
-		SkipFirstSpaces
-	}; // enum Type
-
-	Statement( Type type, const QString & word = QString() )
-		:	m_type( type )
-		,	m_word( word )
-	{
-	}
-
-	//! \return Type.
-	Type type() const
-	{
-		return m_type;
-	}
-
-	//! \return Word.
-	const QString & word() const
-	{
-		return m_word;
-	}
-
-private:
-	//! Type.
-	Type m_type;
-	//! Word.
-	QString m_word;
-}; // class Statement
 
 
 //
@@ -114,9 +67,6 @@ public:
 	Worker * q;
 }; // class WorkerPrivate
 
-static const QChar c_r = QLatin1Char( '\r' );
-static const QChar c_n = QLatin1Char( '\n' );
-static const QChar c_or = QChar::ObjectReplacementCharacter;
 
 void
 WorkerPrivate::init()
@@ -221,210 +171,6 @@ Worker::~Worker()
 {
 }
 
-
-//
-// FileCloser
-//
-
-class FileCloser Q_DECL_FINAL {
-public:
-	FileCloser( QFile & file, QFile::OpenMode mode )
-		:	m_file( file )
-	{
-		m_file.open( mode );
-	}
-
-	~FileCloser()
-	{
-		m_file.close();
-	}
-
-private:
-	//! File.
-	QFile & m_file;
-}; // class FileCloser
-
-
-//
-// WordWithPlace
-//
-
-struct WordWithPlace Q_DECL_FINAL {
-	//! Statement.
-	Statement m_st;
-	//! Postion of the word.
-	int m_pos;
-	//! Poistion of the word with previous spaces.
-	int m_posWithSpaces;
-}; // struct WordWithPlace
-
-using Words = QList< WordWithPlace >;
-
-
-Words splitData( const QString & data )
-{
-	Words words;
-
-	QString word;
-
-	int pos = 0;
-	int posWithSpaces = 0;
-
-	for( int i = 0; i < data.length(); ++i )
-	{
-		const QChar ch = data.at( i );
-
-		if( ch.isSpace() )
-		{
-			if( !word.isEmpty() )
-			{
-				words.append( { Statement( Statement::Word, word ),
-					pos, posWithSpaces } );
-
-				word.clear();
-
-				posWithSpaces = i;
-			}
-		}
-		else if( ch != c_r && ch != c_n )
-		{
-			if( word.isEmpty() )
-				pos = i;
-
-			word.append( ch );
-		}
-		else
-		{
-			if( ch == c_r && ( i + 1 ) < data.length() &&
-				data.at( i + 1 ) == c_n )
-					++i;
-
-			words.append( { Statement::LineEnding, -1, -1 } );
-		}
-	}
-
-	if( !word.isEmpty() )
-		words.append( { Statement( Statement::Word, word ),
-			pos, posWithSpaces } );
-
-	return words;
-} // splitData
-
-
-//
-// LicensePos
-//
-
-struct LicensePos Q_DECL_FINAL {
-	//! Start.
-	int m_start;
-	//! End.
-	int m_end;
-}; // struct LicensePos
-
-
-LicensePos findLicense( const Words & words, const QList< Statement > & license,
-	int & idx )
-{
-	LicensePos res{ -1, -1 };
-
-	int firstWord = 0;
-
-	for( int i = 0; i < license.count(); ++i )
-	{
-		if( license.at( i ).type() == Statement::Word ||
-			license.at( i ).type() == Statement::SkipWord )
-		{
-			firstWord = i;
-
-			break;
-		}
-	}
-
-	for( int i = idx; i < words.count(); ++i )
-	{
-		bool found = true;
-		int wp = i;
-
-		for( int j = firstWord; j < license.count(); ++j )
-		{
-			if( license.at( j ).type() == Statement::Word )
-			{
-				while( wp < words.count() &&
-					words.at( wp ).m_st.type() == Statement::LineEnding )
-						++wp;
-
-				if( wp >= words.count() )
-				{
-					found = false;
-
-					break;
-				}
-
-				if( license.at( j ).word() != words.at( wp ).m_st.word() )
-				{
-					found = false;
-
-					break;
-				}
-			}
-			else if( license.at( j ).type() == Statement::SkipLine )
-			{
-				while( wp < words.count() &&
-					words.at( wp ).m_st.type() != Statement::LineEnding )
-						++wp;
-
-				if( wp >= words.count() && j < license.count() )
-				{
-					found = false;
-
-					break;
-				}
-			}
-
-			++wp;
-		}
-
-		if( found )
-		{
-			if( wp == words.count() )
-				--wp;
-
-			int x = i;
-
-			if( firstWord > 0 )
-			{
-				int lines = 0;
-
-				if( words.at( i - 1 ).m_st.type() == Statement::LineEnding )
-					lines = -1;
-
-				x = i - 1;
-
-				for( ; x >= 0; --x )
-				{
-					if( words.at( x ).m_st.type() == Statement::LineEnding )
-						++lines;
-
-					if( lines == firstWord )
-						break;
-				}
-
-				++x;
-			}
-
-			res = { ( license.at( 0 ).type() == Statement::SkipFirstSpaces ?
-				words.at( x ).m_posWithSpaces : words.at( x ).m_pos ),
-				words.at( wp ).m_pos + words.at( wp ).m_st.word().length() };
-		}
-
-		if( wp >= words.count() )
-			break;
-	}
-
-	return res;
-} // findLicense
-
 void
 Worker::run()
 {
@@ -482,5 +228,5 @@ Worker::run()
 		++i;
 	}
 
-	emit done( foundCount );
+	emit done( foundCount, d->m_files.count() );
 }
