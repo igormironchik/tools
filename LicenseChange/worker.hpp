@@ -47,6 +47,8 @@ class Worker
 signals:
 	//! Processed file.
 	void processedFile( int num );
+	//! Job done.
+	void done( int countOfFilesWithChangedLicense );
 
 public:
 	Worker( const QStringList & files, QTextDocument * oldLicense,

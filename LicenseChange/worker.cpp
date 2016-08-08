@@ -30,6 +30,9 @@
 #include <QList>
 #include <QFile>
 
+// C++ include.
+#include <algorithm>
+
 
 //
 // Statement
@@ -414,6 +417,9 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 				words.at( x ).m_posWithSpaces : words.at( x ).m_pos ),
 				words.at( wp ).m_pos + words.at( wp ).m_st.word().length() };
 		}
+
+		if( wp >= words.count() )
+			break;
 	}
 
 	return res;
@@ -423,6 +429,7 @@ void
 Worker::run()
 {
 	int i = 1;
+	int foundCount = 0;
 
 	foreach( const QString & fileName, d->m_files )
 	{
@@ -449,10 +456,31 @@ Worker::run()
 				if( pos.m_start != -1 )
 					found.append( pos );
 			}
+
+			if( !found.isEmpty() )
+			{
+				++foundCount;
+
+				std::reverse( found.begin(), found.end() );
+
+				foreach( const LicensePos & p, found )
+				{
+					data.replace( p.m_start, p.m_end - p.m_start,
+						d->m_newLicense );
+				}
+
+				QFile file( fileName );
+
+				FileCloser fc( file, QFile::WriteOnly | QFile::Truncate );
+
+				file.write( data.toUtf8() );
+			}
 		}
 
 		emit processedFile( i );
 
 		++i;
 	}
+
+	emit done( foundCount );
 }
