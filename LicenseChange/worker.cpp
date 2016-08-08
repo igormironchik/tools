@@ -89,6 +89,7 @@ public:
 		:	m_files( files )
 		,	m_oldLicense( oldLicense )
 		,	m_newLicense( newLicense->toPlainText() )
+		,	m_isLicenseCorrect( false )
 		,	q( parent )
 	{
 	}
@@ -104,6 +105,8 @@ public:
 	QTextDocument * m_oldLicense;
 	//! New license.
 	QString m_newLicense;
+	//! Is license correct?
+	bool m_isLicenseCorrect;
 	//! Parent.
 	Worker * q;
 }; // class WorkerPrivate
@@ -137,10 +140,10 @@ WorkerPrivate::init()
 			{
 				m_toReplace.append( Statement( Statement::Word, word ) );
 
+				m_isLicenseCorrect = true;
+
 				word.clear();
 			}
-
-			m_toReplace.append( Statement::LineEnding );
 		}
 		else if( ch == c_n )
 		{
@@ -148,16 +151,18 @@ WorkerPrivate::init()
 			{
 				m_toReplace.append( Statement( Statement::Word, word ) );
 
+				m_isLicenseCorrect = true;
+
 				word.clear();
 			}
-
-			m_toReplace.append( Statement::LineEnding );
 		}
 		else if( ch == c_or )
 		{
 			if( !word.isEmpty() )
 			{
 				m_toReplace.append( Statement( Statement::Word, word ) );
+
+				m_isLicenseCorrect = true;
 
 				word.clear();
 			}
@@ -177,11 +182,20 @@ WorkerPrivate::init()
 			{
 				m_toReplace.append( Statement( Statement::Word, word ) );
 
+				m_isLicenseCorrect = true;
+
 				word.clear();
 			}
 		}
 		else
 			word.append( ch );
+	}
+
+	if( !word.isEmpty() )
+	{
+		m_toReplace.append( Statement( Statement::Word, word ) );
+
+		m_isLicenseCorrect = true;
 	}
 
 	m_oldLicense = Q_NULLPTR;
@@ -232,7 +246,7 @@ private:
 // WordWithPlace
 //
 
-struct WordWithPlace {
+struct WordWithPlace Q_DECL_FINAL {
 	//! Statement.
 	Statement m_st;
 	//! Postion of the word.
@@ -293,6 +307,118 @@ Words splitData( const QString & data )
 	return words;
 } // splitData
 
+
+//
+// LicensePos
+//
+
+struct LicensePos Q_DECL_FINAL {
+	//! Start.
+	int m_start;
+	//! End.
+	int m_end;
+}; // struct LicensePos
+
+
+LicensePos findLicense( const Words & words, const QList< Statement > & license,
+	int & idx )
+{
+	LicensePos res{ -1, -1 };
+
+	int firstWord = 0;
+
+	for( int i = 0; i < license.count(); ++i )
+	{
+		if( license.at( i ).type() == Statement::Word ||
+			license.at( i ).type() == Statement::SkipWord )
+		{
+			firstWord = i;
+
+			break;
+		}
+	}
+
+	for( int i = idx; i < words.count(); ++i )
+	{
+		bool found = true;
+		int wp = i;
+
+		for( int j = firstWord; j < license.count(); ++j )
+		{
+			if( license.at( j ).type() == Statement::Word )
+			{
+				while( wp < words.count() &&
+					words.at( wp ).m_st.type() == Statement::LineEnding )
+						++wp;
+
+				if( wp >= words.count() )
+				{
+					found = false;
+
+					break;
+				}
+
+				if( license.at( j ).word() != words.at( wp ).m_st.word() )
+				{
+					found = false;
+
+					break;
+				}
+			}
+			else if( license.at( j ).type() == Statement::SkipLine )
+			{
+				while( wp < words.count() &&
+					words.at( wp ).m_st.type() != Statement::LineEnding )
+						++wp;
+
+				if( wp >= words.count() && j < license.count() )
+				{
+					found = false;
+
+					break;
+				}
+			}
+
+			++wp;
+		}
+
+		if( found )
+		{
+			if( wp == words.count() )
+				--wp;
+
+			int x = i;
+
+			if( firstWord > 0 )
+			{
+				int lines = 0;
+
+				if( words.at( i - 1 ).m_st.type() == Statement::LineEnding )
+					lines = -1;
+
+				x = i - 1;
+
+				for( ; x >= 0; --x )
+				{
+					if( words.at( x ).m_st.type() == Statement::LineEnding )
+						++lines;
+
+					if( lines == firstWord )
+						break;
+				}
+
+				++x;
+			}
+
+			res = { ( license.at( 0 ).type() == Statement::SkipFirstSpaces ?
+				words.at( x ).m_posWithSpaces : words.at( x ).m_pos ),
+				words.at( wp ).m_pos + words.at( wp ).m_st.word().length() };
+		}
+	}
+
+	return res;
+} // findLicense
+
 void
 Worker::run()
 {
@@ -300,21 +426,29 @@ Worker::run()
 
 	foreach( const QString & fileName, d->m_files )
 	{
-		QString data;
-
+		if( d->m_isLicenseCorrect )
 		{
-			QFile file( fileName );
+			QString data;
 
-			FileCloser fc( file, QFile::ReadOnly );
+			{
+				QFile file( fileName );
 
-			data = file.readAll();
-		}
+				FileCloser fc( file, QFile::ReadOnly );
 
-		Words words = splitData( data );
+				data = file.readAll();
+			}
 
-		for( int i = 0; i < words.size(); ++i )
-		{
+			Words words = splitData( data );
 
+			QList< LicensePos > found;
+
+			for( int i = 0; i < words.size(); ++i )
+			{
+				LicensePos pos = findLicense( words, d->m_toReplace, i );
+
+				if( pos.m_start != -1 )
+					found.append( pos );
+			}
 		}
 
 		emit processedFile( i );
