@@ -45,7 +45,15 @@ public:
 void
 TextEditPrivate::init()
 {
+	QImage skipLine( QLatin1String( ":/img/code-function.png" ) );
 
+	q->document()->addResource( QTextDocument::ImageResource,
+		QUrl( "data://skip-line.png" ), QVariant( skipLine ) );
+
+	QImage skipWord( QLatin1String( ":/img/code-variable.png" ) );
+
+	q->document()->addResource( QTextDocument::ImageResource,
+		QUrl( "data://skip-word.png" ), QVariant( skipWord ) );
 }
 
 
@@ -54,7 +62,7 @@ TextEditPrivate::init()
 //
 
 TextEdit::TextEdit( QWidget * parent )
-	:	QPlainTextEdit( parent )
+	:	QTextEdit( parent )
 	,	d( new TextEditPrivate( this ) )
 {
 	d->init();
@@ -65,11 +73,25 @@ TextEdit::~TextEdit()
 }
 
 void
+TextEdit::insertSkipLine()
+{
+	QTextCursor c = textCursor();
+	c.insertImage( QLatin1String( "data://skip-line.png" ) );
+}
+
+void
+TextEdit::insertSkipWord()
+{
+	QTextCursor c = textCursor();
+	c.insertImage( QLatin1String( "data://skip-word.png" ) );
+}
+
+void
 TextEdit::focusInEvent( QFocusEvent * event )
 {
 	emit focusReceived();
 
-	QPlainTextEdit::focusInEvent( event );
+	QTextEdit::focusInEvent( event );
 }
 
 void
@@ -77,5 +99,5 @@ TextEdit::focusOutEvent( QFocusEvent * event )
 {
 	emit focusLost();
 
-	QPlainTextEdit::focusOutEvent( event );
+	QTextEdit::focusOutEvent( event );
 }

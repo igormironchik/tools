@@ -49,8 +49,10 @@ public:
 private slots:
 	//! Run.
 	void run();
-	//! Insert regexp.
-	void insertRegexp();
+	//! Skip line.
+	void skipLine();
+	//! Skip word.
+	void skipWord();
 	//! Name filters changed.
 	void nameFiltersChanged( const QString & filter );
 	//! Old license received focus.

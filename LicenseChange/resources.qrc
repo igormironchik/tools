@@ -8,5 +8,8 @@
 		<file>img/dialog-cancel.png</file>
 		<file>img/code-function.png</file>
 		<file>img/arrow-right.png</file>
+		<file>img/code-variable.png</file>
+		<file>img/code-function_22x22.png</file>
+		<file>img/code-variable_22x22.png</file>
 	</qresource>
 </RCC>

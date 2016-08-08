@@ -158,7 +158,8 @@ public:
 	MainWindowPrivate( MainWindow * parent )
 		:	m_centralWidget( Q_NULLPTR )
 		,	m_run( Q_NULLPTR )
-		,	m_regexp( Q_NULLPTR )
+		,	m_skipLine( Q_NULLPTR )
+		,	m_skipWord( Q_NULLPTR )
 		,	q( parent )
 	{
 	}
@@ -170,8 +171,10 @@ public:
 	CentralWidget * m_centralWidget;
 	//! Run action.
 	QAction * m_run;
-	//! Insert regexp action.
-	QAction * m_regexp;
+	//! Skip line action.
+	QAction * m_skipLine;
+	//! Skip word action.
+	QAction * m_skipWord;
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
@@ -195,12 +198,21 @@ MainWindowPrivate::init()
 	m_run->setShortcut( QKeySequence( "Ctrl+R" ) );
 	m_run->setEnabled( false );
 
-	m_regexp = tool->addAction( QIcon( ":/img/code-function.png" ),
-		MainWindow::tr( "Insert Regular Expression" ),
-		q, &MainWindow::insertRegexp );
-	m_regexp->setShortcutContext( Qt::ApplicationShortcut );
-	m_regexp->setShortcut( QKeySequence( "Ctrl+X" ) );
-	m_regexp->setEnabled( false );
+	tool->addSeparator();
+
+	m_skipLine = tool->addAction( QIcon( ":/img/code-function_22x22.png" ),
+		MainWindow::tr( "Skip Line" ),
+		q, &MainWindow::skipLine );
+	m_skipLine->setShortcutContext( Qt::ApplicationShortcut );
+	m_skipLine->setShortcut( QKeySequence( "Ctrl+L" ) );
+	m_skipLine->setEnabled( false );
+
+	m_skipWord = tool->addAction( QIcon( ":/img/code-variable_22x22.png" ),
+		MainWindow::tr( "Skip Word" ),
+		q, &MainWindow::skipWord );
+	m_skipWord->setShortcutContext( Qt::ApplicationShortcut );
+	m_skipWord->setShortcut( QKeySequence( "Ctrl+W" ) );
+	m_skipWord->setEnabled( false );
 
 	q->addToolBar( Qt::TopToolBarArea, tool );
 
@@ -326,9 +338,15 @@ MainWindow::checkedFiles( const QString & path, QStringList & res,
 }
 
 void
-MainWindow::insertRegexp()
+MainWindow::skipLine()
 {
+	d->m_centralWidget->m_oldLicense->insertSkipLine();
+}
 
+void
+MainWindow::skipWord()
+{
+	d->m_centralWidget->m_oldLicense->insertSkipWord();
 }
 
 void
@@ -343,13 +361,15 @@ MainWindow::nameFiltersChanged( const QString & filter )
 void
 MainWindow::oldLicenseReceivedFocus()
 {
-	d->m_regexp->setEnabled( true );
+	d->m_skipLine->setEnabled( true );
+	d->m_skipWord->setEnabled( true );
 }
 
 void
 MainWindow::oldLicenseLostFocus()
 {
-	d->m_regexp->setEnabled( false );
+	d->m_skipLine->setEnabled( false );
+	d->m_skipWord->setEnabled( false );
 }
 
 void

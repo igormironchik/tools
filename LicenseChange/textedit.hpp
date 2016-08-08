@@ -24,7 +24,7 @@
 #define LICENSECHANGE__TEXTEDIT_HPP__INCLUDED
 
 // Qt include.
-#include <QPlainTextEdit>
+#include <QTextEdit>
 #include <QScopedPointer>
 
 
@@ -36,7 +36,7 @@ class TextEditPrivate;
 
 //! Text editor.
 class TextEdit Q_DECL_FINAL
-	:	public QPlainTextEdit
+	:	public QTextEdit
 {
 	Q_OBJECT
 
@@ -49,6 +49,12 @@ signals:
 public:
 	TextEdit( QWidget * parent = Q_NULLPTR );
 	~TextEdit();
+
+public slots:
+	//! Insert skip line.
+	void insertSkipLine();
+	//! Insert skip word.
+	void insertSkipWord();
 
 protected:
 	void focusInEvent( QFocusEvent * event ) Q_DECL_OVERRIDE;
