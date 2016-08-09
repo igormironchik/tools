@@ -179,6 +179,8 @@ Worker::run()
 
 	if( d->m_isLicenseCorrect )
 	{
+		QStringList filesWithoutLicense;
+
 		foreach( const QString & fileName, d->m_files )
 		{
 			QString data;
@@ -221,13 +223,15 @@ Worker::run()
 
 				file.write( data.toUtf8() );
 			}
+			else
+				filesWithoutLicense.append( fileName );
 
 			emit processedFile( i );
 
 			++i;
 		}
 
-		emit done( foundCount, d->m_files.count() );
+		emit done( foundCount, d->m_files.count(), filesWithoutLicense );
 	}
 	else
 		emit errorInOldLicense();

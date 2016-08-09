@@ -64,7 +64,8 @@ private slots:
 	//! File was processed.
 	void fileProcessed( int num );
 	//! Job done.
-	void jobDone( int found, int total );
+	void jobDone( int found, int total,
+		const QStringList & filesWithoutLicense );
 	//! Thread finished.
 	void threadFinished();
 	//! Error in old license.

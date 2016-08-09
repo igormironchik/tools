@@ -262,10 +262,10 @@ MainWindow::~MainWindow()
 void
 MainWindow::run()
 {
-	const QStringList files = checkedFiles();
-
 	if( !d->m_worker )
 	{
+		const QStringList files = checkedFiles();
+
 		if( !files.isEmpty() )
 		{
 			d->m_worker = new Worker( files,
@@ -287,6 +287,9 @@ MainWindow::run()
 
 			d->m_worker->start();
 		}
+		else
+			QMessageBox::warning( this, tr( "No files were selected..." ),
+				tr( "No files were selected." ) );
 	}
 	else
 		QMessageBox::warning( this, tr( "Job is already running..." ),
@@ -366,20 +369,21 @@ MainWindow::checkedFiles( const QString & path, QStringList & res,
 {
 	QDir dir( path );
 
-	const QFileInfoList names = dir.entryInfoList( filter,
-		QDir::NoDotAndDotDot | QDir::AllEntries );
+	const QFileInfoList files = dir.entryInfoList( filter,
+		QDir::NoDotAndDotDot | QDir::Files );
 
-	foreach( const QFileInfo & i, names )
+	const QFileInfoList dirs = dir.entryInfoList(
+		QDir::NoDotAndDotDot | QDir::Dirs );
+
+	foreach( const QFileInfo & i, files )
+		res.append( i.absoluteFilePath() );
+
+	foreach( const QFileInfo & i, dirs )
 	{
-		if( i.isDir() )
-		{
-			const QString p = i.absolutePath();
+		const QString p = i.absoluteFilePath();
 
-			if( !ub.contains( p ) )
-				checkedFiles( p, res, cb, cl, ub, ul, filter );
-		}
-		else
-			res.append( i.absoluteFilePath() );
+		if( !ub.contains( p ) )
+			checkedFiles( p, res, cb, cl, ub, ul, filter );
 	}
 }
 
@@ -440,13 +444,26 @@ MainWindow::fileProcessed( int num )
 }
 
 void
-MainWindow::jobDone( int found, int total )
+MainWindow::jobDone( int found, int total,
+	const QStringList & filesWithoutLicense )
 {
 	d->m_progress->hide();
 
-	QMessageBox::information( this, tr( "Job done..." ),
+	QString details = QLatin1String( "Files without found license:\n" );
+
+	foreach( const QString & str, filesWithoutLicense )
+	{
+		details.append( str );
+		details.append( QLatin1Char( '\n' ) );
+	}
+
+	QMessageBox info( QMessageBox::Information, tr( "Job done..." ),
 		tr( "Replaced license in %1 files. Total files processed: %2." )
-			.arg( QString::number( found ) ).arg( QString::number( total ) ) );
+			.arg( QString::number( found ) ).arg( QString::number( total ) ),
+		QMessageBox::Ok, this );
+	info.setDetailedText( details );
+
+	info.exec();
 }
 
 void

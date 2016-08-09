@@ -49,7 +49,7 @@ signals:
 	void processedFile( int num );
 	//! Job done.
 	void done( int countOfFilesWithChangedLicense,
-		int totalFilesCount );
+		int totalFilesCount, const QStringList & filesWithoutLicense );
 	//! Error in old license.
 	void errorInOldLicense();
 
