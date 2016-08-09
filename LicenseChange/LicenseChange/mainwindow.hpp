@@ -67,6 +67,8 @@ private slots:
 	void jobDone( int found, int total );
 	//! Thread finished.
 	void threadFinished();
+	//! Error in old license.
+	void errorInOldLicense();
 
 private:
 	//! Enable/disable run button.

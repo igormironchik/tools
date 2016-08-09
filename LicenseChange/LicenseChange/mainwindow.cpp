@@ -42,8 +42,9 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QRegExp>
-
-#include <QDebug>
+#include <QMessageBox>
+#include <QProgressBar>
+#include <QStatusBar>
 
 
 //
@@ -166,6 +167,7 @@ public:
 		,	m_skipLine( Q_NULLPTR )
 		,	m_skipWord( Q_NULLPTR )
 		,	m_worker( Q_NULLPTR )
+		,	m_progress( Q_NULLPTR )
 		,	q( parent )
 	{
 	}
@@ -183,6 +185,8 @@ public:
 	QAction * m_skipWord;
 	//! Worker.
 	Worker * m_worker;
+	//! Progress bar.
+	QProgressBar * m_progress;
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
@@ -223,6 +227,12 @@ MainWindowPrivate::init()
 	m_skipWord->setEnabled( false );
 
 	q->addToolBar( Qt::TopToolBarArea, tool );
+
+	m_progress = new QProgressBar( q );
+	m_progress->setMinimum( 0 );
+
+	q->statusBar()->addWidget( m_progress );
+	m_progress->hide();
 
 	MainWindow::connect( m_centralWidget->m_filter, &QLineEdit::textChanged,
 		q, &MainWindow::nameFiltersChanged );
@@ -266,6 +276,12 @@ MainWindow::run()
 			this, &MainWindow::jobDone );
 		connect( d->m_worker, &Worker::finished,
 			this, &MainWindow::threadFinished );
+		connect( d->m_worker, &Worker::errorInOldLicense,
+			this, &MainWindow::errorInOldLicense );
+
+		d->m_progress->setMaximum( files.count() );
+		d->m_progress->setValue( 0 );
+		d->m_progress->show();
 
 		d->m_worker->start();
 	}
@@ -414,13 +430,17 @@ MainWindow::enableDisableRunButton()
 void
 MainWindow::fileProcessed( int num )
 {
-	qDebug() << num;
+	d->m_progress->setValue( num );
 }
 
 void
 MainWindow::jobDone( int found, int total )
 {
-	qDebug() << "found" << found << "total" << total;
+	d->m_progress->hide();
+
+	QMessageBox::information( this, tr( "Job done..." ),
+		tr( "Replaced license in %1 files. Total files processed: %2." )
+			.arg( QString::number( found ) ).arg( QString::number( total ) ) );
 }
 
 void
@@ -429,4 +449,11 @@ MainWindow::threadFinished()
 	d->m_worker->deleteLater();
 
 	d->m_worker = Q_NULLPTR;
+}
+
+void
+MainWindow::errorInOldLicense()
+{
+	QMessageBox::critical( this, tr( "Error in old license..." ),
+		tr( "Error in old license. Please specify at least one word." ) );
 }

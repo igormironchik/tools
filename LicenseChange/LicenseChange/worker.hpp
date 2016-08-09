@@ -50,6 +50,8 @@ signals:
 	//! Job done.
 	void done( int countOfFilesWithChangedLicense,
 		int totalFilesCount );
+	//! Error in old license.
+	void errorInOldLicense();
 
 public:
 	Worker( const QStringList & files, QTextDocument * oldLicense,
