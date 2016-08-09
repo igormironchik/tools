@@ -33,17 +33,32 @@ class Utils
 	Q_OBJECT
 
 private slots:
+	void initTestCase()
+	{
+		m_lic1.append( Statement::SkipFirstSpaces );
+		m_lic1.append( { Statement::Word, QLatin1String( "Best" ) } );
+		m_lic1.append( { Statement::Word, QLatin1String( "license." ) } );
+	}
+
 	void test_splitData()
 	{
 		const QString data = QLatin1String(
+			// 0 - 12
 			"word1 word2\r"
+			// 12 - 25
 			"word3 word4\r\n"
+			// 25 - 37
 			"word5 word6\n"
-			" word7" );
+			// 37 - 44
+			" word7\n"
+			// 44 - 45
+			"\n"
+			// 45 - 50
+			"word8" );
 
 		Words w = splitData( data );
 
-		QCOMPARE( w.count(), 10 );
+		QCOMPARE( w.count(), 13 );
 
 		QCOMPARE( w.at( 0 ).m_pos, 0 );
 		QCOMPARE( w.at( 0 ).m_posWithSpaces, 0 );
@@ -91,8 +106,64 @@ private slots:
 		QCOMPARE( w.at( 9 ).m_posWithSpaces, 37 );
 		QCOMPARE( w.at( 9 ).m_st.word(), QLatin1String( "word7" ) );
 		QCOMPARE( w.at( 9 ).m_st.type(), Statement::Word );
+
+		QCOMPARE( w.at( 10 ).m_pos, -1 );
+		QCOMPARE( w.at( 10 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 10 ).m_st.type(), Statement::LineEnding );
+
+		QCOMPARE( w.at( 11 ).m_pos, -1 );
+		QCOMPARE( w.at( 11 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 11 ).m_st.type(), Statement::LineEnding );
+
+		QCOMPARE( w.at( 12 ).m_pos, 45 );
+		QCOMPARE( w.at( 12 ).m_posWithSpaces, 45 );
+		QCOMPARE( w.at( 12 ).m_st.word(), QLatin1String( "word8" ) );
+		QCOMPARE( w.at( 12 ).m_st.type(), Statement::Word );
 	}
 
+	void test_license1()
+	{
+		const QString data = QLatin1String(
+			// 0 - 3
+			"/*\n"
+			// 3 - 18
+			"\tBest license.\n"
+			// 18 - 21
+			"*/\n"
+			// 21 - 22
+			"\n"
+			// 22 - 42
+			"#include <iostream>\n"
+			// 42 - 43
+			"\n"
+			// 43 - 48
+			"Best\n"
+			// 48 - 56
+			"license." );
+
+		Words w = splitData( data );
+
+		QList< LicensePos > pos;
+
+		for( int i = 0; i < w.count(); ++i )
+		{
+			LicensePos p = findLicense( w, m_lic1, i );
+
+			if( p.m_start != -1 )
+				pos.append( p );
+		}
+
+		QCOMPARE( pos.count(), 2 );
+
+		QCOMPARE( pos.at( 0 ).m_start, 3 );
+		QCOMPARE( pos.at( 0 ).m_end, 17 );
+
+		QCOMPARE( pos.at( 1 ).m_start, 43 );
+		QCOMPARE( pos.at( 1 ).m_end, 56 );
+	}
+
+private:
+	QList< Statement > m_lic1;
 }; // class BoolScalarTest
 
 QTEST_MAIN( Utils )

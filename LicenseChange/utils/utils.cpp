@@ -99,9 +99,9 @@ Words splitData( const QString & data )
 					pos, posWithSpaces } );
 
 				word.clear();
-
-				posWithSpaces = i + 1;
 			}
+
+			posWithSpaces = i + 1;
 
 			words.append( { Statement::LineEnding, -1, -1 } );
 		}
@@ -161,7 +161,13 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 			{
 				while( wp < words.count() &&
 					words.at( wp ).m_st.type() == Statement::LineEnding )
-						++wp;
+				{
+					++wp;
+
+					if( j <= ( license.at( 0 ).type() !=
+						Statement::SkipFirstSpaces ? firstWord : firstWord + 1 ) )
+							++i;
+				}
 
 				if( wp >= words.count() )
 				{
@@ -191,7 +197,9 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 				}
 			}
 
-			++wp;
+			if( license.at( j ).type() != Statement::SkipFirstSpaces &&
+				j < license.count() - 1 )
+					++wp;
 		}
 
 		if( found )
@@ -227,6 +235,8 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 				words.at( wp ).m_pos + words.at( wp ).m_st.word().length() };
 
 			idx = wp + 1;
+
+			break;
 		}
 
 		if( wp >= words.count() )
