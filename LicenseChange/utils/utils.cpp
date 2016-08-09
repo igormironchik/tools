@@ -196,6 +196,18 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 					break;
 				}
 			}
+			else if( license.at( j ).type() == Statement::SkipWord )
+			{
+				while( wp < words.count() &&
+					words.at( wp ).m_st.type() == Statement::LineEnding )
+				{
+					++wp;
+
+					if( j <= ( license.at( 0 ).type() !=
+						Statement::SkipFirstSpaces ? firstWord : firstWord + 1 ) )
+							++i;
+				}
+			}
 
 			if( license.at( j ).type() != Statement::SkipFirstSpaces &&
 				j < license.count() - 1 )
