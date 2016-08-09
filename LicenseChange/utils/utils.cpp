@@ -185,6 +185,10 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 			}
 			else if( license.at( j ).type() == Statement::SkipLine )
 			{
+				if( wp < words.count() &&
+					words.at( wp ).m_st.type() == Statement::LineEnding )
+						++wp;
+
 				while( wp < words.count() &&
 					words.at( wp ).m_st.type() != Statement::LineEnding )
 						++wp;
@@ -195,6 +199,9 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 
 					break;
 				}
+
+				if( words.at( wp ).m_st.type() == Statement::LineEnding )
+					--wp;
 			}
 			else if( license.at( j ).type() == Statement::SkipWord )
 			{
