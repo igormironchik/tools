@@ -49,6 +49,11 @@ private slots:
 		m_lic3.append( Statement::SkipWord );
 		m_lic3.append( { Statement::Word, QLatin1String( "license." ) } );
 		m_lic3.append( Statement::SkipLine );
+
+		m_lic4.append( Statement::SkipLine );
+		m_lic4.append( Statement::SkipWord );
+		m_lic4.append( { Statement::Word, QLatin1String( "license." ) } );
+		m_lic4.append( Statement::SkipLine );
 	}
 
 	void test_splitData()
@@ -81,8 +86,8 @@ private slots:
 		QCOMPARE( w.at( 1 ).m_st.word(), QLatin1String( "word2" ) );
 		QCOMPARE( w.at( 1 ).m_st.type(), Statement::Word );
 
-		QCOMPARE( w.at( 2 ).m_pos, -1 );
-		QCOMPARE( w.at( 2 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 2 ).m_pos, 11 );
+		QCOMPARE( w.at( 2 ).m_posWithSpaces, 11 );
 		QCOMPARE( w.at( 2 ).m_st.type(), Statement::LineEnding );
 
 		QCOMPARE( w.at( 3 ).m_pos, 12 );
@@ -95,8 +100,8 @@ private slots:
 		QCOMPARE( w.at( 4 ).m_st.word(), QLatin1String( "word4" ) );
 		QCOMPARE( w.at( 4 ).m_st.type(), Statement::Word );
 
-		QCOMPARE( w.at( 5 ).m_pos, -1 );
-		QCOMPARE( w.at( 5 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 5 ).m_pos, 23 );
+		QCOMPARE( w.at( 5 ).m_posWithSpaces, 23 );
 		QCOMPARE( w.at( 5 ).m_st.type(), Statement::LineEnding );
 
 		QCOMPARE( w.at( 6 ).m_pos, 25 );
@@ -109,8 +114,8 @@ private slots:
 		QCOMPARE( w.at( 7 ).m_st.word(), QLatin1String( "word6" ) );
 		QCOMPARE( w.at( 7 ).m_st.type(), Statement::Word );
 
-		QCOMPARE( w.at( 8 ).m_pos, -1 );
-		QCOMPARE( w.at( 8 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 8 ).m_pos, 36 );
+		QCOMPARE( w.at( 8 ).m_posWithSpaces, 36 );
 		QCOMPARE( w.at( 8 ).m_st.type(), Statement::LineEnding );
 
 		QCOMPARE( w.at( 9 ).m_pos, 38 );
@@ -118,12 +123,12 @@ private slots:
 		QCOMPARE( w.at( 9 ).m_st.word(), QLatin1String( "word7" ) );
 		QCOMPARE( w.at( 9 ).m_st.type(), Statement::Word );
 
-		QCOMPARE( w.at( 10 ).m_pos, -1 );
-		QCOMPARE( w.at( 10 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 10 ).m_pos, 43 );
+		QCOMPARE( w.at( 10 ).m_posWithSpaces, 43 );
 		QCOMPARE( w.at( 10 ).m_st.type(), Statement::LineEnding );
 
-		QCOMPARE( w.at( 11 ).m_pos, -1 );
-		QCOMPARE( w.at( 11 ).m_posWithSpaces, -1 );
+		QCOMPARE( w.at( 11 ).m_pos, 44 );
+		QCOMPARE( w.at( 11 ).m_posWithSpaces, 44 );
 		QCOMPARE( w.at( 11 ).m_st.type(), Statement::LineEnding );
 
 		QCOMPARE( w.at( 12 ).m_pos, 45 );
@@ -253,10 +258,56 @@ private slots:
 		QCOMPARE( pos.at( 0 ).m_end, 38 );
 	}
 
+	void test_license4()
+	{
+		const QString data = QLatin1String(
+			// 0 - 3
+			"/*\n"
+			// 3 - 11
+			"License\n"
+			// 11 - 31
+			"\tBest\never\nlicense.\n"
+			// 31 - 39
+			"License\n"
+			// 39 - 42
+			"*/\n"
+			// 42 - 43
+			"\n"
+			// 43 - 63
+			"#include <iostream>\n"
+			// 63 - 64
+			"\n"
+			// 64 - 74
+			"Best\never\n"
+			// 74 - 83
+			"license.\n" );
+
+		Words w = splitData( data );
+
+		QList< LicensePos > pos;
+
+		for( int i = 0; i < w.count(); ++i )
+		{
+			LicensePos p = findLicense( w, m_lic4, i );
+
+			if( p.m_start != -1 )
+				pos.append( p );
+		}
+
+		QCOMPARE( pos.count(), 2 );
+
+		QCOMPARE( pos.at( 0 ).m_start, 11 );
+		QCOMPARE( pos.at( 0 ).m_end, 38 );
+
+		QCOMPARE( pos.at( 1 ).m_start, 64 );
+		QCOMPARE( pos.at( 1 ).m_end, 83 );
+	}
+
 private:
 	QList< Statement > m_lic1;
 	QList< Statement > m_lic2;
 	QList< Statement > m_lic3;
+	QList< Statement > m_lic4;
 }; // class BoolScalarTest
 
 QTEST_MAIN( Utils )

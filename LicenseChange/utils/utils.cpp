@@ -89,9 +89,15 @@ Words splitData( const QString & data )
 		}
 		else if( ch == c_r || ch == c_n )
 		{
+			int start = i;
+			int len = 1;
+
 			if( ch == c_r && ( i + 1 ) < data.length() &&
 				data.at( i + 1 ) == c_n )
-					++i;
+			{
+				++i;
+				len = 2;
+			}
 
 			if( !word.isEmpty() )
 			{
@@ -103,7 +109,8 @@ Words splitData( const QString & data )
 
 			posWithSpaces = i + 1;
 
-			words.append( { Statement::LineEnding, -1, -1 } );
+			words.append( { Statement( Statement::LineEnding,
+				QString( len, QLatin1Char( '\n' ) ) ), start, start } );
 		}
 		else if( ch.isSpace() )
 		{
@@ -185,23 +192,35 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 			}
 			else if( license.at( j ).type() == Statement::SkipLine )
 			{
+				bool skipped = false;
+
 				if( wp < words.count() &&
 					words.at( wp ).m_st.type() == Statement::LineEnding )
-						++wp;
+				{
+					++wp;
+
+					skipped = true;
+				}
 
 				while( wp < words.count() &&
 					words.at( wp ).m_st.type() != Statement::LineEnding )
-						++wp;
+				{
+					++wp;
 
-				if( wp >= words.count() && j < license.count() )
+					skipped = true;
+				}
+
+				if( ( wp >= words.count() && j < license.count() - 1 ) ||
+					!skipped )
 				{
 					found = false;
 
 					break;
 				}
 
-				if( words.at( wp ).m_st.type() == Statement::LineEnding )
-					--wp;
+				if( wp < words.count() - 1 &&
+					words.at( wp ).m_st.type() == Statement::LineEnding )
+						--wp;
 			}
 			else if( license.at( j ).type() == Statement::SkipWord )
 			{
@@ -249,8 +268,9 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 				++x;
 			}
 
-			res = { ( license.at( 0 ).type() == Statement::SkipFirstSpaces ?
-				words.at( x ).m_posWithSpaces : words.at( x ).m_pos ),
+			res = { ( license.at( 0 ).type() == Statement::SkipFirstSpaces ||
+				license.at( 0 ).type() == Statement::SkipLine ?
+					words.at( x ).m_posWithSpaces : words.at( x ).m_pos ),
 				words.at( wp ).m_pos + words.at( wp ).m_st.word().length() };
 
 			idx = wp + 1;
