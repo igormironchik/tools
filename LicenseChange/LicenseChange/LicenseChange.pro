@@ -2,7 +2,7 @@
 TEMPLATE = app
 QT += core gui widgets
 TARGET = LicenseChange
-DESTDIR = ../bin
+DESTDIR = ../../bin
 
 win32 {
     RC_FILE = app.rc
