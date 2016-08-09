@@ -264,27 +264,33 @@ MainWindow::run()
 {
 	const QStringList files = checkedFiles();
 
-	if( !files.isEmpty() )
+	if( !d->m_worker )
 	{
-		d->m_worker = new Worker( files,
-			d->m_centralWidget->m_oldLicense->document(),
-			d->m_centralWidget->m_newLicense->document(), this );
+		if( !files.isEmpty() )
+		{
+			d->m_worker = new Worker( files,
+				d->m_centralWidget->m_oldLicense->document(),
+				d->m_centralWidget->m_newLicense->document(), this );
 
-		connect( d->m_worker, &Worker::processedFile,
-			this, &MainWindow::fileProcessed );
-		connect( d->m_worker, &Worker::done,
-			this, &MainWindow::jobDone );
-		connect( d->m_worker, &Worker::finished,
-			this, &MainWindow::threadFinished );
-		connect( d->m_worker, &Worker::errorInOldLicense,
-			this, &MainWindow::errorInOldLicense );
+			connect( d->m_worker, &Worker::processedFile,
+				this, &MainWindow::fileProcessed );
+			connect( d->m_worker, &Worker::done,
+				this, &MainWindow::jobDone );
+			connect( d->m_worker, &Worker::finished,
+				this, &MainWindow::threadFinished );
+			connect( d->m_worker, &Worker::errorInOldLicense,
+				this, &MainWindow::errorInOldLicense );
 
-		d->m_progress->setMaximum( files.count() );
-		d->m_progress->setValue( 0 );
-		d->m_progress->show();
+			d->m_progress->setMaximum( files.count() );
+			d->m_progress->setValue( 0 );
+			d->m_progress->show();
 
-		d->m_worker->start();
+			d->m_worker->start();
+		}
 	}
+	else
+		QMessageBox::warning( this, tr( "Job is already running..." ),
+			tr( "Job is already running. Please wait while it's finished." ) );
 }
 
 QStringList
