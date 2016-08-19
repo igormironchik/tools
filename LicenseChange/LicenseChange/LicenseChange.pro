@@ -12,14 +12,16 @@ HEADERS = mainwindow.hpp \
     textedit.hpp \
     proxy.hpp \
 	delayedexecutiontimer.hpp \
-    worker.hpp
+    worker.hpp \
+    opts_dialog.hpp
 
 SOURCES = main.cpp \
 	mainwindow.cpp \
     textedit.cpp \
     proxy.cpp \
 	delayedexecutiontimer.cpp \
-    worker.cpp
+    worker.cpp \
+    opts_dialog.cpp
 			
 RESOURCES = resources.qrc
 
@@ -30,3 +32,6 @@ DEPENDPATH += $$PWD/../utils
 
 win32:!win32-g++: PRE_TARGETDEPS += $$OUT_PWD/../lib/utils.lib
 else:unix|win32-g++: PRE_TARGETDEPS += $$OUT_PWD/../lib/libutils.a
+
+FORMS += \
+    opts_dialog.ui

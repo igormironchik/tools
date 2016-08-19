@@ -166,7 +166,11 @@ private slots:
 			LicensePos p = findLicense( w, m_lic1, i );
 
 			if( p.m_start != -1 )
+			{
 				pos.append( p );
+
+				--i;
+			}
 		}
 
 		QCOMPARE( pos.count(), 2 );
@@ -207,7 +211,11 @@ private slots:
 			LicensePos p = findLicense( w, m_lic2, i );
 
 			if( p.m_start != -1 )
+			{
 				pos.append( p );
+
+				--i;
+			}
 		}
 
 		QCOMPARE( pos.count(), 1 );
@@ -249,7 +257,11 @@ private slots:
 			LicensePos p = findLicense( w, m_lic3, i );
 
 			if( p.m_start != -1 )
+			{
 				pos.append( p );
+
+				--i;
+			}
 		}
 
 		QCOMPARE( pos.count(), 1 );
@@ -291,7 +303,11 @@ private slots:
 			LicensePos p = findLicense( w, m_lic4, i );
 
 			if( p.m_start != -1 )
+			{
 				pos.append( p );
+
+				--i;
+			}
 		}
 
 		QCOMPARE( pos.count(), 2 );

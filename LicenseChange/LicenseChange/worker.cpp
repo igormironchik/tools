@@ -41,8 +41,11 @@
 class WorkerPrivate {
 public:
 	WorkerPrivate( Worker * parent, const QStringList & files,
-		QTextDocument * oldLicense, QTextDocument * newLicense )
+		QTextDocument * oldLicense, QTextDocument * newLicense,
+		bool searchForOneLicense, bool caseSensitive )
 		:	m_files( files )
+		,	m_searchForOneLicense( searchForOneLicense )
+		,	m_caseSensitive( caseSensitive )
 		,	m_oldLicense( oldLicense )
 		,	m_newLicense( newLicense->toPlainText() )
 		,	m_isLicenseCorrect( false )
@@ -55,6 +58,10 @@ public:
 
 	//! Files.
 	QStringList m_files;
+	//! Search for one occurrence of license only?
+	bool m_searchForOneLicense;
+	//! Case sensitive search.
+	bool m_caseSensitive;
 	//! To replace.
 	QList< Statement > m_toReplace;
 	//! Old license.
@@ -91,7 +98,8 @@ WorkerPrivate::init()
 
 			if( !word.isEmpty() )
 			{
-				m_toReplace.append( Statement( Statement::Word, word ) );
+				m_toReplace.append( Statement( Statement::Word,
+					( m_caseSensitive ? word : word.toLower() ) ) );
 
 				m_isLicenseCorrect = true;
 
@@ -102,7 +110,8 @@ WorkerPrivate::init()
 		{
 			if( !word.isEmpty() )
 			{
-				m_toReplace.append( Statement( Statement::Word, word ) );
+				m_toReplace.append( Statement( Statement::Word,
+					( m_caseSensitive ? word : word.toLower() ) ) );
 
 				m_isLicenseCorrect = true;
 
@@ -113,7 +122,8 @@ WorkerPrivate::init()
 		{
 			if( !word.isEmpty() )
 			{
-				m_toReplace.append( Statement( Statement::Word, word ) );
+				m_toReplace.append( Statement( Statement::Word,
+					( m_caseSensitive ? word : word.toLower() ) ) );
 
 				m_isLicenseCorrect = true;
 
@@ -133,7 +143,8 @@ WorkerPrivate::init()
 		{
 			if( !word.isEmpty() )
 			{
-				m_toReplace.append( Statement( Statement::Word, word ) );
+				m_toReplace.append( Statement( Statement::Word,
+					( m_caseSensitive ? word : word.toLower() ) ) );
 
 				m_isLicenseCorrect = true;
 
@@ -146,7 +157,8 @@ WorkerPrivate::init()
 
 	if( !word.isEmpty() )
 	{
-		m_toReplace.append( Statement( Statement::Word, word ) );
+		m_toReplace.append( Statement( Statement::Word,
+			( m_caseSensitive ? word : word.toLower() ) ) );
 
 		m_isLicenseCorrect = true;
 	}
@@ -160,9 +172,11 @@ WorkerPrivate::init()
 //
 
 Worker::Worker( const QStringList & files, QTextDocument * oldLicense,
-	QTextDocument * newLicense, QObject * parent )
+	QTextDocument * newLicense, bool searchForOneLicense,
+	bool caseSensitive, QObject * parent )
 	:	QThread( parent )
-	,	d( new WorkerPrivate( this, files, oldLicense, newLicense ) )
+	,	d( new WorkerPrivate( this, files, oldLicense, newLicense,
+			searchForOneLicense, caseSensitive ) )
 {
 	d->init();
 }
@@ -193,7 +207,7 @@ Worker::run()
 				data = file.readAll();
 			}
 
-			Words words = splitData( data );
+			Words words = splitData( data, !d->m_caseSensitive );
 
 			QList< LicensePos > found;
 
@@ -202,7 +216,14 @@ Worker::run()
 				LicensePos pos = findLicense( words, d->m_toReplace, i );
 
 				if( pos.m_start != -1 )
+				{
 					found.append( pos );
+
+					--i;
+
+					if( d->m_searchForOneLicense )
+						break;
+				}
 			}
 
 			if( !found.isEmpty() )

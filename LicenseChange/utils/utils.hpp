@@ -105,7 +105,7 @@ using Words = QList< WordWithPlace >;
 // splitData
 //
 
-Words splitData( const QString & data );
+Words splitData( const QString & data, bool toLower = false );
 
 
 //

@@ -25,6 +25,7 @@
 #include "textedit.hpp"
 #include "proxy.hpp"
 #include "worker.hpp"
+#include "opts_dialog.hpp"
 
 // Qt include.
 #include <QApplication>
@@ -205,7 +206,8 @@ MainWindowPrivate::init()
 	QToolBar * tool = new QToolBar( MainWindow::tr( "Tools" ), q );
 
 	m_run = tool->addAction( QIcon( ":/img/arrow-right.png" ),
-		MainWindow::tr( "Run" ), q, &MainWindow::run );
+		MainWindow::tr( "Run and change all occurrences of license." ),
+		q, &MainWindow::run );
 	m_run->setShortcutContext( Qt::ApplicationShortcut );
 	m_run->setShortcut( QKeySequence( "Ctrl+R" ) );
 	m_run->setEnabled( false );
@@ -268,24 +270,30 @@ MainWindow::run()
 
 		if( !files.isEmpty() )
 		{
-			d->m_worker = new Worker( files,
-				d->m_centralWidget->m_oldLicense->document(),
-				d->m_centralWidget->m_newLicense->document(), this );
+			OptsDialog dlg( this );
 
-			connect( d->m_worker, &Worker::processedFile,
-				this, &MainWindow::fileProcessed );
-			connect( d->m_worker, &Worker::done,
-				this, &MainWindow::jobDone );
-			connect( d->m_worker, &Worker::finished,
-				this, &MainWindow::threadFinished );
-			connect( d->m_worker, &Worker::errorInOldLicense,
-				this, &MainWindow::errorInOldLicense );
+			if( dlg.exec() == QDialog::Accepted )
+			{
+				d->m_worker = new Worker( files,
+					d->m_centralWidget->m_oldLicense->document(),
+					d->m_centralWidget->m_newLicense->document(),
+					dlg.onlyOneLicense(), dlg.isCaseSensitive(), this );
 
-			d->m_progress->setMaximum( files.count() );
-			d->m_progress->setValue( 0 );
-			d->m_progress->show();
+				connect( d->m_worker, &Worker::processedFile,
+					this, &MainWindow::fileProcessed );
+				connect( d->m_worker, &Worker::done,
+					this, &MainWindow::jobDone );
+				connect( d->m_worker, &Worker::finished,
+					this, &MainWindow::threadFinished );
+				connect( d->m_worker, &Worker::errorInOldLicense,
+					this, &MainWindow::errorInOldLicense );
 
-			d->m_worker->start();
+				d->m_progress->setMaximum( files.count() );
+				d->m_progress->setValue( 0 );
+				d->m_progress->show();
+
+				d->m_worker->start();
+			}
 		}
 		else
 			QMessageBox::warning( this, tr( "No files were selected..." ),

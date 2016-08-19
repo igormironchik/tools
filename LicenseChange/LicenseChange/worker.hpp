@@ -55,7 +55,8 @@ signals:
 
 public:
 	Worker( const QStringList & files, QTextDocument * oldLicense,
-		QTextDocument * newLicense, QObject * parent = Q_NULLPTR );
+		QTextDocument * newLicense, bool searchForOneLicense,
+		bool caseSensitive, QObject * parent = Q_NULLPTR );
 	~Worker();
 
 protected:

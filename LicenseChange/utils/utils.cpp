@@ -67,7 +67,7 @@ FileCloser::~FileCloser()
 // splitData
 //
 
-Words splitData( const QString & data )
+Words splitData( const QString & data, bool toLower )
 {
 	Words words;
 
@@ -101,7 +101,8 @@ Words splitData( const QString & data )
 
 			if( !word.isEmpty() )
 			{
-				words.append( { Statement( Statement::Word, word ),
+				words.append( { Statement( Statement::Word,
+						( toLower? word.toLower() : word ) ),
 					pos, posWithSpaces } );
 
 				word.clear();
@@ -116,7 +117,8 @@ Words splitData( const QString & data )
 		{
 			if( !word.isEmpty() )
 			{
-				words.append( { Statement( Statement::Word, word ),
+				words.append( { Statement( Statement::Word,
+						( toLower? word.toLower() : word ) ),
 					pos, posWithSpaces } );
 
 				word.clear();
@@ -127,7 +129,8 @@ Words splitData( const QString & data )
 	}
 
 	if( !word.isEmpty() )
-		words.append( { Statement( Statement::Word, word ),
+		words.append( { Statement( Statement::Word,
+				( toLower? word.toLower() : word ) ),
 			pos, posWithSpaces } );
 
 	return words;
