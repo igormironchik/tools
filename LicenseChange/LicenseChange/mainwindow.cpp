@@ -46,6 +46,8 @@
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QStatusBar>
+#include <QToolButton>
+#include <QWidget>
 
 
 //
@@ -157,6 +159,41 @@ public:
 
 
 //
+// ProgressBar
+//
+
+class ProgressBar
+	:	public QWidget
+{
+public:
+	ProgressBar( QWidget * parent )
+		:	QWidget( parent )
+		,	m_progress( new QProgressBar( this ) )
+		,	m_cancel( new QToolButton( this ) )
+	{
+		m_cancel->setIcon( QIcon( ":/img/dialog-cancel.png" ) );
+
+		m_progress->setMinimum( 0 );
+
+		QHBoxLayout * l = new QHBoxLayout( this );
+
+		l->addWidget( m_progress );
+		l->addWidget( m_cancel );
+	}
+
+	~ProgressBar()
+	{
+	}
+
+public:
+	//! Progress bar.
+	QProgressBar * m_progress;
+	//! Cancel button.
+	QToolButton * m_cancel;
+}; // class ProgressBar
+
+
+//
 // MainWindowPrivate
 //
 
@@ -187,7 +224,7 @@ public:
 	//! Worker.
 	Worker * m_worker;
 	//! Progress bar.
-	QProgressBar * m_progress;
+	ProgressBar * m_progress;
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
@@ -230,8 +267,7 @@ MainWindowPrivate::init()
 
 	q->addToolBar( Qt::TopToolBarArea, tool );
 
-	m_progress = new QProgressBar( q );
-	m_progress->setMinimum( 0 );
+	m_progress = new ProgressBar( q );
 
 	q->statusBar()->addWidget( m_progress );
 	m_progress->hide();
@@ -244,6 +280,8 @@ MainWindowPrivate::init()
 		q, &MainWindow::oldLicenseLostFocus );
 	MainWindow::connect( m_centralWidget->m_oldLicense, &TextEdit::textChanged,
 		q, &MainWindow::oldLicenseChanged );
+	MainWindow::connect( m_progress->m_cancel, &QToolButton::clicked,
+		q, &MainWindow::cancelJob );
 }
 
 
@@ -266,10 +304,17 @@ MainWindow::run()
 {
 	if( !d->m_worker )
 	{
+		statusBar()->showMessage(
+			tr( "Looking for files. Be patient, please." ) );
+
+		QApplication::processEvents();
+
 		const QStringList files = checkedFiles();
 
 		if( !files.isEmpty() )
 		{
+			statusBar()->clearMessage();
+
 			OptsDialog dlg( this );
 
 			if( dlg.exec() == QDialog::Accepted )
@@ -287,17 +332,26 @@ MainWindow::run()
 					this, &MainWindow::threadFinished );
 				connect( d->m_worker, &Worker::errorInOldLicense,
 					this, &MainWindow::errorInOldLicense );
+				connect( d->m_worker, &Worker::terminated,
+					this, &MainWindow::jobTerminated );
 
-				d->m_progress->setMaximum( files.count() );
-				d->m_progress->setValue( 0 );
+				d->m_progress->m_progress->setMaximum( files.count() );
+				d->m_progress->m_progress->setValue( 0 );
 				d->m_progress->show();
 
 				d->m_worker->start();
 			}
+			else
+				statusBar()->showMessage( tr( "Job was cancelled." ), 3000 );
 		}
 		else
+		{
 			QMessageBox::warning( this, tr( "No files were selected..." ),
 				tr( "No files were selected." ) );
+
+			statusBar()->showMessage( tr( "Files weren't found." ),
+				3000 );
+		}
 	}
 	else
 		QMessageBox::warning( this, tr( "Job is already running..." ),
@@ -448,7 +502,7 @@ MainWindow::enableDisableRunButton()
 void
 MainWindow::fileProcessed( int num )
 {
-	d->m_progress->setValue( num );
+	d->m_progress->m_progress->setValue( num );
 }
 
 void
@@ -471,6 +525,8 @@ MainWindow::jobDone( int found, int total,
 		QMessageBox::Ok, this );
 	info.setDetailedText( details );
 
+	statusBar()->showMessage( tr( "Job done." ), 3000 );
+
 	info.exec();
 }
 
@@ -483,8 +539,26 @@ MainWindow::threadFinished()
 }
 
 void
+MainWindow::jobTerminated()
+{
+	d->m_progress->hide();
+
+	statusBar()->showMessage( tr( "Job terminated." ), 3000 );
+
+	QMessageBox::information( this, tr( "Job terminated..." ),
+		tr( "Job terminated." ) );
+}
+
+void
 MainWindow::errorInOldLicense()
 {
 	QMessageBox::critical( this, tr( "Error in old license..." ),
 		tr( "Error in old license. Please specify at least one word." ) );
+}
+
+void
+MainWindow::cancelJob()
+{
+	if( d->m_worker )
+		d->m_worker->stopJob();
 }

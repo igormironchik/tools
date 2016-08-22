@@ -29,6 +29,8 @@
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QList>
+#include <QMutex>
+#include <QMutexLocker>
 
 // C++ include.
 #include <algorithm>
@@ -48,6 +50,7 @@ public:
 		,	m_caseSensitive( caseSensitive )
 		,	m_oldLicense( oldLicense )
 		,	m_newLicense( newLicense->toPlainText() )
+		,	m_terminateRequested( false )
 		,	m_isLicenseCorrect( false )
 		,	q( parent )
 	{
@@ -68,6 +71,10 @@ public:
 	QTextDocument * m_oldLicense;
 	//! New license.
 	QString m_newLicense;
+	//! Mutex.
+	QMutex m_mutex;
+	//! Terminate requestde.
+	bool m_terminateRequested;
 	//! Is license correct?
 	bool m_isLicenseCorrect;
 	//! Parent.
@@ -186,6 +193,14 @@ Worker::~Worker()
 }
 
 void
+Worker::stopJob()
+{
+	QMutexLocker lock( &d->m_mutex );
+
+	d->m_terminateRequested = true;
+}
+
+void
 Worker::run()
 {
 	int i = 1;
@@ -252,9 +267,23 @@ Worker::run()
 			emit processedFile( i );
 
 			++i;
+
+			{
+				QMutexLocker lock( &d->m_mutex );
+
+				if( d->m_terminateRequested )
+					break;
+			}
 		}
 
-		emit done( foundCount, d->m_files.count(), filesWithoutLicense );
+		{
+			QMutexLocker lock( &d->m_mutex );
+
+			if( d->m_terminateRequested )
+				emit terminated();
+			else
+				emit done( foundCount, d->m_files.count(), filesWithoutLicense );
+		}
 	}
 	else
 		emit errorInOldLicense();

@@ -52,12 +52,17 @@ signals:
 		int totalFilesCount, const QStringList & filesWithoutLicense );
 	//! Error in old license.
 	void errorInOldLicense();
+	//! Job terminated.
+	void terminated();
 
 public:
 	Worker( const QStringList & files, QTextDocument * oldLicense,
 		QTextDocument * newLicense, bool searchForOneLicense,
 		bool caseSensitive, QObject * parent = Q_NULLPTR );
 	~Worker();
+
+	//! Terminate job.
+	void stopJob();
 
 protected:
 	void run() Q_DECL_OVERRIDE;

@@ -68,8 +68,12 @@ private slots:
 		const QStringList & filesWithoutLicense );
 	//! Thread finished.
 	void threadFinished();
+	//! Job terminated.
+	void jobTerminated();
 	//! Error in old license.
 	void errorInOldLicense();
+	//! Cancel job.
+	void cancelJob();
 
 private:
 	//! Enable/disable run button.
