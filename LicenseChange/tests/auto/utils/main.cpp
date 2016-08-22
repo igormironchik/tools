@@ -178,6 +178,8 @@ private slots:
 
 				--i;
 			}
+			else
+				break;
 		}
 
 		QCOMPARE( pos.count(), 2 );
@@ -223,6 +225,8 @@ private slots:
 
 				--i;
 			}
+			else
+				break;
 		}
 
 		QCOMPARE( pos.count(), 1 );
@@ -269,6 +273,8 @@ private slots:
 
 				--i;
 			}
+			else
+				break;
 		}
 
 		QCOMPARE( pos.count(), 1 );
@@ -315,6 +321,8 @@ private slots:
 
 				--i;
 			}
+			else
+				break;
 		}
 
 		QCOMPARE( pos.count(), 2 );
@@ -364,6 +372,8 @@ private slots:
 
 				--i;
 			}
+			else
+				break;
 		}
 
 		QCOMPARE( pos.count(), 2 );

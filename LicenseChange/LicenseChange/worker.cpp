@@ -224,6 +224,8 @@ Worker::run()
 					if( d->m_searchForOneLicense )
 						break;
 				}
+				else
+					break;
 			}
 
 			if( !found.isEmpty() )
