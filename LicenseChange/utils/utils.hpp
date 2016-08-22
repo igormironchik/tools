@@ -70,6 +70,9 @@ private:
 }; // class Statement
 
 
+bool operator == ( const Statement & s1, const Statement & s2 );
+
+
 //
 // FileCloser
 //
@@ -99,6 +102,9 @@ struct WordWithPlace Q_DECL_FINAL {
 }; // struct WordWithPlace
 
 using Words = QList< WordWithPlace >;
+
+
+bool operator == ( const WordWithPlace & w1, const WordWithPlace & w2 );
 
 
 //

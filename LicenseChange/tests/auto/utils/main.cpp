@@ -54,6 +54,13 @@ private slots:
 		m_lic4.append( Statement::SkipWord );
 		m_lic4.append( { Statement::Word, QLatin1String( "license." ) } );
 		m_lic4.append( Statement::SkipLine );
+
+		m_lic5.append( Statement::SkipLine );
+		m_lic5.append( Statement::SkipLine );
+		m_lic5.append( Statement::SkipWord );
+		m_lic5.append( Statement::SkipWord );
+		m_lic5.append( { Statement::Word, QLatin1String( "license." ) } );
+		m_lic5.append( Statement::SkipLine );
 	}
 
 	void test_splitData()
@@ -319,11 +326,61 @@ private slots:
 		QCOMPARE( pos.at( 1 ).m_end, 83 );
 	}
 
+	void test_license5()
+	{
+		const QString data = QLatin1String(
+			// 0 - 3
+			"/*\n"
+			// 3 - 11
+			"License\n"
+			// 11 - 31
+			"\tBest\never\nlicense.\n"
+			// 31 - 39
+			"License\n"
+			// 39 - 42
+			"*/\n"
+			// 42 - 43
+			"\n"
+			// 43 - 63
+			"#include <iostream>\n"
+			// 63 - 64
+			"\n"
+			// 64 - 74
+			"Best\never\n"
+			// 74 - 83
+			"license.\n" );
+
+		Words w = splitData( data );
+
+		QList< LicensePos > pos;
+
+		for( int i = 0; i < w.count(); ++i )
+		{
+			LicensePos p = findLicense( w, m_lic5, i );
+
+			if( p.m_start != -1 )
+			{
+				pos.append( p );
+
+				--i;
+			}
+		}
+
+		QCOMPARE( pos.count(), 2 );
+
+		QCOMPARE( pos.at( 0 ).m_start, 0 );
+		QCOMPARE( pos.at( 0 ).m_end, 38 );
+
+		QCOMPARE( pos.at( 1 ).m_start, 43 );
+		QCOMPARE( pos.at( 1 ).m_end, 83 );
+	}
+
 private:
 	QList< Statement > m_lic1;
 	QList< Statement > m_lic2;
 	QList< Statement > m_lic3;
 	QList< Statement > m_lic4;
+	QList< Statement > m_lic5;
 }; // class BoolScalarTest
 
 QTEST_MAIN( Utils )

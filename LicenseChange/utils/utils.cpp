@@ -23,6 +23,10 @@
 // LicenseChange include.
 #include "utils.hpp"
 
+// C++ include.
+#include <algorithm>
+#include <iterator>
+
 
 //
 // Statement
@@ -44,6 +48,19 @@ const QString &
 Statement::word() const
 {
 	return m_word;
+}
+
+bool operator == ( const Statement & s1, const Statement & s2 )
+{
+	if( s1.type() == Statement::Word && s2.type() == Statement::Word )
+		return s1.word() == s2.word();
+	else
+		return s1.type() == s2.type();
+}
+
+bool operator == ( const WordWithPlace & w1, const WordWithPlace & w2 )
+{
+	return w1.m_st == w2.m_st;
 }
 
 
@@ -148,11 +165,10 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 
 	int firstWord = 0;
 
+	// Find first real word.
 	for( int i = 0; i < license.count(); ++i )
 	{
-		if( license.at( i ).type() == Statement::Word ||
-			license.at( i ).type() == Statement::SkipWord ||
-			license.at( i ).type() == Statement::SkipFirstSpaces )
+		if( license.at( i ).type() == Statement::Word )
 		{
 			firstWord = i;
 
@@ -160,23 +176,28 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 		}
 	}
 
-	for( int i = idx; i < words.count(); ++i )
+	auto first = words.cbegin();
+	first += idx;
+
+	auto it = std::find( first, words.cend(), WordWithPlace{
+		license.at( firstWord ), -1, -1 } );
+
+	while( it != words.cend() )
 	{
+		idx = std::distance( words.cbegin(), it );
+
 		bool found = true;
-		int wp = i;
+		int wp = idx;
 
 		for( int j = firstWord; j < license.count(); ++j )
 		{
 			if( license.at( j ).type() == Statement::Word )
 			{
+				// Skip line endings.
 				while( wp < words.count() &&
 					words.at( wp ).m_st.type() == Statement::LineEnding )
 				{
 					++wp;
-
-					if( j <= ( license.at( 0 ).type() !=
-						Statement::SkipFirstSpaces ? firstWord : firstWord + 1 ) )
-							++i;
 				}
 
 				if( wp >= words.count() )
@@ -227,48 +248,54 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 			}
 			else if( license.at( j ).type() == Statement::SkipWord )
 			{
+				// Skip line endings.
 				while( wp < words.count() &&
 					words.at( wp ).m_st.type() == Statement::LineEnding )
 				{
 					++wp;
-
-					if( j <= ( license.at( 0 ).type() !=
-						Statement::SkipFirstSpaces ? firstWord : firstWord + 1 ) )
-							++i;
 				}
 			}
 
-			if( license.at( j ).type() != Statement::SkipFirstSpaces &&
-				j < license.count() - 1 )
-					++wp;
+			if( j < license.count() - 1 )
+				++wp;
 		}
 
+		// If license was found.
 		if( found )
 		{
 			if( wp == words.count() )
 				--wp;
 
-			int x = i;
+			int x = idx;
 
 			if( firstWord > 0 )
 			{
-				int lines = 0;
-
-				if( words.at( i - 1 ).m_st.type() == Statement::LineEnding )
-					lines = -1;
-
-				x = i - 1;
-
-				for( ; x >= 0; --x )
+				for( int i = firstWord - 1; i >= 0; --i )
 				{
-					if( words.at( x ).m_st.type() == Statement::LineEnding )
-						++lines;
+					if( license.at( i ).type() == Statement::SkipWord )
+					{
+						while( x > 0 &&
+							words.at( x - 1 ).m_st.type() != Statement::Word )
+						{
+							--x;
+						}
 
-					if( lines == firstWord )
-						break;
+						--x;
+					}
+					else if( license.at( i ).type() == Statement::SkipLine )
+					{
+						--x;
+
+						while( x > 0 &&
+							words.at( x - 1 ).m_st.type() != Statement::LineEnding )
+						{
+							--x;
+						}
+					}
 				}
 
-				++x;
+				if( x < 0 )
+					x = 0;
 			}
 
 			res = { ( license.at( 0 ).type() == Statement::SkipFirstSpaces ||
@@ -283,6 +310,9 @@ LicensePos findLicense( const Words & words, const QList< Statement > & license,
 
 		if( wp >= words.count() )
 			break;
+
+		it = std::find( ++it, words.cend(), WordWithPlace{
+			license.at( firstWord ), -1, -1 } );
 	}
 
 	return res;
