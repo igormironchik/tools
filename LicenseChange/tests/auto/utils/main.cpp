@@ -385,6 +385,32 @@ private slots:
 		QCOMPARE( pos.at( 1 ).m_end, 83 );
 	}
 
+	void test_license6()
+	{
+		const QString data = QLatin1String(
+			"Best" );
+
+		Words w = splitData( data );
+
+		QList< LicensePos > pos;
+
+		for( int i = 0; i < w.count(); ++i )
+		{
+			LicensePos p = findLicense( w, m_lic1, i );
+
+			if( p.m_start != -1 )
+			{
+				pos.append( p );
+
+				--i;
+			}
+			else
+				break;
+		}
+
+		QCOMPARE( pos.count(), 0 );
+	}
+
 private:
 	QList< Statement > m_lic1;
 	QList< Statement > m_lic2;
