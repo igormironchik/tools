@@ -150,7 +150,7 @@ int main( int argc, char ** argv )
 
 					if( date.indexIn( line ) != -1 )
 					{
-						weekDay = date.cap( 1 );
+						const QString tmpWeekDay = date.cap( 1 );
 						const QString mTmp = date.cap( 2 );
 						const int tmp = date.cap( 3 ).toInt();
 						const int yTmp = date.cap( 4 ).toInt();
@@ -174,6 +174,7 @@ int main( int argc, char ** argv )
 								d = tmp;
 								y = yTmp;
 								month = mTmp;
+								weekDay = tmpWeekDay;
 
 								ins = 0;
 								del = 0;
@@ -184,6 +185,7 @@ int main( int argc, char ** argv )
 							d = tmp;
 							y = yTmp;
 							month = mTmp;
+							weekDay = tmpWeekDay;
 						}
 
 						while( !lines.isEmpty() )
