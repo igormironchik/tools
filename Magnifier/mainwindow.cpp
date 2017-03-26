@@ -222,7 +222,7 @@ MainWindowPrivate::capture()
 	if( !screen )
 		return;
 
-	m_pixmap = screen->grabWindow( 0, q->pos().x(), q->pos().y(),
+	m_pixmap = screen->grabWindow( 0, 100, 100,//q->pos().x(), q->pos().y(),
 		m_cfg.width() / m_cfg.scale() + 1,
 		m_cfg.height() / m_cfg.scale() + 1 );
 
@@ -233,7 +233,7 @@ void
 MainWindowPrivate::copy()
 {
 	QPixmap pixmap( m_img.width() * m_cfg.scale(),
-		m_img.height() * m_cfg.height() );
+		m_img.height() * m_cfg.scale() );
 
 	QPainter p( &pixmap );
 
