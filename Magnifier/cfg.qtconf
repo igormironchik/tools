@@ -1,0 +1,27 @@
+
+{forGeneration MAGNIFIER__CFG_HPP
+
+    || Configuration
+    {class Cfg
+        {tagScalar
+            {valueType int}
+            {name width}
+            {defaultValue 100}
+            {required}
+        }
+
+        {tagScalar
+            {valueType int}
+            {name height}
+            {defaultValue 100}
+            {required}
+        }
+
+        {tagScalar
+            {valueType int}
+            {name scale}
+            {defaultValue 3}
+            {required}
+        }
+    }
+}

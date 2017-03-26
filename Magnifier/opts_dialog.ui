@@ -130,22 +130,6 @@
  <connections>
   <connection>
    <sender>m_btns</sender>
-   <signal>accepted()</signal>
-   <receiver>OptsDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>186</x>
-     <y>87</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>139</x>
-     <y>54</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>m_btns</sender>
    <signal>rejected()</signal>
    <receiver>OptsDialog</receiver>
    <slot>reject()</slot>

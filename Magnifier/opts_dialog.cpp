@@ -26,6 +26,10 @@
 #include "ui_opts_dialog.h"
 #include "opts_dialog.hpp"
 
+// Qt include.
+#include <QSpinBox>
+#include <QDialogButtonBox>
+
 
 //
 // OptsDialogPrivate
@@ -33,14 +37,17 @@
 
 class OptsDialogPrivate {
 public:
-	OptsDialogPrivate( OptsDialog * parent )
-		:	q( parent )
+	OptsDialogPrivate( Cfg & cfg, OptsDialog * parent )
+		:	m_cfg( cfg )
+		,	q( parent )
 	{
 	}
 
 	//! Init.
 	void init();
 
+	//! Cfg.
+	Cfg & m_cfg;
 	//! UI.
 	Ui::OptsDialog m_ui;
 	//! Parent.
@@ -51,6 +58,13 @@ void
 OptsDialogPrivate::init()
 {
 	m_ui.setupUi( q );
+
+	m_ui.m_height->setValue( m_cfg.height() );
+	m_ui.m_width->setValue( m_cfg.width() );
+	m_ui.m_scale->setValue( m_cfg.scale() );
+
+	OptsDialog::connect( m_ui.m_btns, &QDialogButtonBox::accepted,
+		q, &OptsDialog::accepted );
 }
 
 
@@ -58,13 +72,23 @@ OptsDialogPrivate::init()
 // OptsDialog
 //
 
-OptsDialog::OptsDialog( QWidget * parent )
+OptsDialog::OptsDialog( Cfg & cfg, QWidget * parent )
 	:	QDialog( parent )
-	,	d( new OptsDialogPrivate( this ) )
+	,	d( new OptsDialogPrivate( cfg, this ) )
 {
 	d->init();
 }
 
 OptsDialog::~OptsDialog()
 {
+}
+
+void
+OptsDialog::accepted()
+{
+	d->m_cfg.setHeight( d->m_ui.m_height->value() );
+	d->m_cfg.setWidth( d->m_ui.m_width->value() );
+	d->m_cfg.setScale( d->m_ui.m_scale->value() );
+
+	accept();
 }

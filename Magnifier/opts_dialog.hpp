@@ -27,6 +27,9 @@
 #include <QDialog>
 #include <QScopedPointer>
 
+// Magnifier include.
+#include "cfg.hpp"
+
 
 //
 // OptsDialog
@@ -41,10 +44,16 @@ class OptsDialog
 	Q_OBJECT
 
 public:
-	OptsDialog( QWidget * parent );
+	OptsDialog( Cfg & cfg, QWidget * parent );
 	~OptsDialog();
 
+private slots:
+	//! Accepted.
+	void accepted();
+
 private:
+	friend class OptsDialogPrivate;
+
 	Q_DISABLE_COPY( OptsDialog )
 
 	QScopedPointer< OptsDialogPrivate > d;

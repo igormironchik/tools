@@ -44,6 +44,26 @@ public:
 	MainWindow();
 	~MainWindow();
 
+private slots:
+	//! Show window.
+	void showWindow();
+	//! About.
+	void about();
+	//! Help.
+	void help();
+	//! About Qt.
+	void aboutQt();
+	//! Settings.
+	void settings();
+
+protected:
+	void paintEvent( QPaintEvent * ) Q_DECL_OVERRIDE;
+	void keyPressEvent( QKeyEvent * e ) Q_DECL_OVERRIDE;
+	void mousePressEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
+	void mouseMoveEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
+	void showEvent( QShowEvent * e ) Q_DECL_OVERRIDE;
+	void moveEvent( QMoveEvent * e ) Q_DECL_OVERRIDE;
+
 private:
 	friend class MainWindowPrivate;
 
