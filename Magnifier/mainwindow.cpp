@@ -222,20 +222,9 @@ MainWindowPrivate::capture()
 	if( !screen )
 		return;
 
-	const int x = q->pos().x();
-	const int y = q->pos().y();
-
-	m_pixmap = screen->grabWindow( 0, 100, 100,
+	m_pixmap = screen->grabWindow( 0, q->pos().x(), q->pos().y(),
 		m_cfg.width() / m_cfg.scale() + 1,
 		m_cfg.height() / m_cfg.scale() + 1 );
-
-	m_pixmap.save( "tmp.png" );
-
-//	QPixmap p = screen->grabWindow( 0, x, y,
-//		m_cfg.width() / m_cfg.scale() + 1,
-//		m_cfg.height() / m_cfg.scale() + 1 );
-
-//	p.save( "tmp.png" );
 
 	m_img = m_pixmap.toImage();
 }
