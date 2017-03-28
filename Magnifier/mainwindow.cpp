@@ -22,17 +22,12 @@
 
 // LicenseChange include.
 #include "mainwindow.hpp"
-#include "cfg.hpp"
-#include "opts_dialog.hpp"
 
 // Qt include.
 #include <QApplication>
 #include <QMenuBar>
 #include <QAction>
 #include <QMessageBox>
-#include <QStatusBar>
-#include <QStandardPaths>
-#include <QFileInfo>
 #include <QPixmap>
 #include <QScreen>
 #include <QClipboard>
@@ -40,11 +35,10 @@
 #include <QImage>
 #include <QDir>
 #include <QWindow>
-#include <QSystemTrayIcon>
+#include <QMouseEvent>
+#include <QCursor>
 
-// QtConfFile include.
-#include <QtConfFile/Utils>
-#include <QtConfFile/Exceptions>
+#include <QDebug>
 
 
 //
@@ -54,164 +48,133 @@
 class MainWindowPrivate {
 public:
 	MainWindowPrivate( MainWindow * parent )
-		:	m_sysTray( false )
+		:	m_pressed( false )
+		,	m_overrided( false )
 		,	q( parent )
 	{
 	}
 
 	//! Init.
 	void init();
-	//! Read cfg.
-	void readCfg();
-	//! Save cfg.
-	void saveCfg();
 	//! Capture.
-	void capture();
-	//! Copy to clipboard.
-	void copy();
+	QPixmap capture();
+	//! Copy image to clipboard.
+	void copy( const QPixmap & p );
 	//! Scale.
-	void scale( QPainter & p );
+	void scale( QPainter & p, const QImage & img, int factor );
 
-	//! Cfg.
-	Cfg m_cfg;
-	//! Pixmap.
-	QPixmap m_pixmap;
-	//! Image.
-	QImage m_img;
+	//! Type of the handler.
+	enum class HandlerType {
+		TopLeft,
+		Control,
+		Top,
+		TopRight,
+		Right,
+		BottomRight,
+		Bottom,
+		BottomLeft,
+		Left,
+		Unknown
+	}; // enum class HandlerType
+
+	//! \return Type of the handler by the pos.
+	HandlerType handlerType( const QPoint & pos );
+
 	//! Position of the mouse cursor.
 	QPoint m_pos;
-	//! Is system tray available.
-	bool m_sysTray;
+	//! Is mouse button pressed?
+	bool m_pressed;
+	//! Is cursor overrided?
+	bool m_overrided;
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
 
-static const QString c_appCfgFileName = QLatin1String( "/Magnifier.cfg" );
+static const int c_dim = 20;
+static const int c_delta = 1;
+static const QSize c_minSize = QSize(
+	c_dim * 5 + c_delta * 3, c_dim * 3 + c_delta * 5 );
 
 void
 MainWindowPrivate::init()
 {
-	readCfg();
+	q->setAutoFillBackground( false );
 
-	q->resize( m_cfg.width(), m_cfg.height() );
+	QScreen * screen = QApplication::primaryScreen();
 
-	if( QSystemTrayIcon::isSystemTrayAvailable() )
+	if( const QWindow * window = q->windowHandle() )
+		screen = window->screen();
+
+	const int w = 150;
+	const int h = 150;
+
+	q->resize( w, h );
+
+	if( screen )
 	{
-		m_sysTray = true;
-
-		QSystemTrayIcon * sysTray = new QSystemTrayIcon( q );
-
-		QIcon icon( ":/img/app_256x256.png" );
-		icon.addFile( ":/img/app_128x128.png" );
-		icon.addFile( ":/img/app_64x64.png" );
-		icon.addFile( ":/img/app_48x48.png" );
-		icon.addFile( ":/img/app_32x32.png" );
-		icon.addFile( ":/img/app_22x22.png" );
-		icon.addFile( ":/img/app_16x16.png" );
-
-		sysTray->setIcon( icon );
-
-		QMenu * ctx = new QMenu( q );
-
-		ctx->addAction( QIcon( ":/img/app_22x22.png" ),
-			MainWindow::tr( "Show" ), q, &MainWindow::showWindow );
-
-		ctx->addSeparator();
-
-		ctx->addAction( QIcon( ":/img/help-about.png" ),
-			MainWindow::tr( "About" ), q, &MainWindow::about );
-
-		ctx->addAction( QIcon( ":/img/help-contents.png" ),
-			MainWindow::tr( "Help" ), q, &MainWindow::help );
-
-		ctx->addAction( QIcon( ":/img/qt.png" ),
-			MainWindow::tr( "About Qt" ), q, &MainWindow::aboutQt );
-
-		ctx->addSeparator();
-
-		ctx->addAction( QIcon( ":/img/configure.png" ),
-			MainWindow::tr( "Settings" ), q, &MainWindow::settings );
-
-		ctx->addSeparator();
-
-		ctx->addAction(
-			QIcon( ":/img/application-exit.png" ),
-			MainWindow::tr( "Quit" ), QApplication::instance(),
-			&QApplication::quit );
-
-		sysTray->setContextMenu( ctx );
-
-		sysTray->show();
+		q->move( screen->geometry().width() / 2 - w / 2,
+			screen->geometry().height() / 2 - h / 2 );
 	}
-	else
-		m_sysTray = false;
+
+	q->setAttribute( Qt::WA_TranslucentBackground );
+
+	q->setMouseTracking( true );
+
+	q->setMinimumSize( c_minSize );
+
+//	if( QSystemTrayIcon::isSystemTrayAvailable() )
+//	{
+//		m_sysTray = true;
+
+//		QSystemTrayIcon * sysTray = new QSystemTrayIcon( q );
+
+//		QIcon icon( ":/img/app_256x256.png" );
+//		icon.addFile( ":/img/app_128x128.png" );
+//		icon.addFile( ":/img/app_64x64.png" );
+//		icon.addFile( ":/img/app_48x48.png" );
+//		icon.addFile( ":/img/app_32x32.png" );
+//		icon.addFile( ":/img/app_22x22.png" );
+//		icon.addFile( ":/img/app_16x16.png" );
+
+//		sysTray->setIcon( icon );
+
+//		QMenu * ctx = new QMenu( q );
+
+//		ctx->addAction( QIcon( ":/img/app_22x22.png" ),
+//			MainWindow::tr( "Show" ), q, &MainWindow::showWindow );
+
+//		ctx->addSeparator();
+
+//		ctx->addAction( QIcon( ":/img/help-about.png" ),
+//			MainWindow::tr( "About" ), q, &MainWindow::about );
+
+//		ctx->addAction( QIcon( ":/img/help-contents.png" ),
+//			MainWindow::tr( "Help" ), q, &MainWindow::help );
+
+//		ctx->addAction( QIcon( ":/img/qt.png" ),
+//			MainWindow::tr( "About Qt" ), q, &MainWindow::aboutQt );
+
+//		ctx->addSeparator();
+
+//		ctx->addAction( QIcon( ":/img/configure.png" ),
+//			MainWindow::tr( "Settings" ), q, &MainWindow::settings );
+
+//		ctx->addSeparator();
+
+//		ctx->addAction(
+//			QIcon( ":/img/application-exit.png" ),
+//			MainWindow::tr( "Quit" ), QApplication::instance(),
+//			&QApplication::quit );
+
+//		sysTray->setContextMenu( ctx );
+
+//		sysTray->show();
+//	}
+//	else
+//		m_sysTray = false;
 }
 
-void
-MainWindowPrivate::readCfg()
-{
-	static const QString cfgFolder =
-		QStandardPaths::writableLocation( QStandardPaths::AppConfigLocation );
-
-	const QString cfgFileName = cfgFolder + c_appCfgFileName;
-
-	if( QFileInfo::exists( cfgFileName ) )
-	{
-		try {
-			TagCfg tag;
-
-			QtConfFile::readQtConfFile( tag, cfgFileName,
-				QTextCodec::codecForName( "UTF-8" ) );
-
-			m_cfg = tag.getCfg();
-		}
-		catch( const QtConfFile::Exception & )
-		{
-		}
-	}
-}
-
-void
-MainWindowPrivate::saveCfg()
-{
-	static const QString cfgFolder =
-		QStandardPaths::writableLocation( QStandardPaths::AppConfigLocation );
-
-	const QString cfgFileName = cfgFolder + c_appCfgFileName;
-
-	QFileInfo info( cfgFileName );
-
-	QDir dir( info.path() );
-
-	if( !dir.exists() )
-	{
-		if( !dir.mkpath( info.path() ) )
-		{
-			QMessageBox::warning( q,
-				MainWindow::tr( "Unable to create folder..." ),
-				MainWindow::tr( "Unable to create folder for the configuration files. "
-					"Path: \"%1\"." ).arg( info.path() ) );
-
-			return;
-		}
-	}
-
-	try {
-		TagCfg tag( m_cfg );
-
-		QtConfFile::writeQtConfFile( tag, cfgFileName,
-			QTextCodec::codecForName( "UTF-8" ) );
-	}
-	catch( const QtConfFile::Exception & x )
-	{
-		QMessageBox::warning( q,
-			MainWindow::tr( "Unable to Save Configuration..." ),
-			MainWindow::tr( "Unable to save configuration.\n"
-				"%1" ).arg( x.whatAsQString() ) );
-	}
-}
-
-void
+QPixmap
 MainWindowPrivate::capture()
 {
 	QScreen * screen = QApplication::primaryScreen();
@@ -219,47 +182,65 @@ MainWindowPrivate::capture()
 	if( const QWindow * window = q->windowHandle() )
 		screen = window->screen();
 
-	if( !screen )
-		return;
-
-	m_pixmap = screen->grabWindow( 0, q->pos().x(), q->pos().y(),
-		m_cfg.width() / m_cfg.scale() + 1,
-		m_cfg.height() / m_cfg.scale() + 1 );
-
-	m_img = m_pixmap.toImage();
+	return ( screen ? screen->grabWindow( 0, q->pos().x(), q->pos().y(),
+		q->width(), q->height() ) : QPixmap() );
 }
 
 void
-MainWindowPrivate::copy()
+MainWindowPrivate::copy( const QPixmap & p )
 {
-	QPixmap pixmap( m_img.width() * m_cfg.scale(),
-		m_img.height() * m_cfg.scale() );
-
-	QPainter p( &pixmap );
-
-	scale( p );
-
-	QApplication::clipboard()->setPixmap( pixmap );
+	QApplication::clipboard()->setPixmap( p );
 }
 
 void
-MainWindowPrivate::scale( QPainter & p )
+MainWindowPrivate::scale( QPainter & p, const QImage & img, int factor )
 {
-	const int s = m_cfg.scale();
-
-	for( int i = 0; i < m_img.width(); ++i )
+	for( int i = 0; i < img.width(); ++i )
 	{
-		for( int j = 0; j < m_img.height(); ++j )
+		for( int j = 0; j < img.height(); ++j )
 		{
-			const QColor c = m_img.pixelColor( i, j );
+			const QColor c = img.pixelColor( i, j );
 
 			p.setPen( c );
 
 			p.setBrush( c );
 
-			p.drawRect( i * s, j * s, s, s );
+			p.drawRect( i * factor, j * factor, factor, factor );
 		}
 	}
+}
+
+MainWindowPrivate::HandlerType
+MainWindowPrivate::handlerType( const QPoint & pos )
+{
+	if( QRect( c_delta, c_delta, c_dim, c_dim ).contains( pos ) )
+		return HandlerType::TopLeft;
+	else if( QRect( q->width() - c_dim - c_delta, c_delta, c_dim, c_dim )
+				.contains( pos ) )
+		return HandlerType::TopRight;
+	else if( QRect( c_delta, q->height() - c_dim - c_delta, c_dim, c_dim )
+				.contains( pos ) )
+		return HandlerType::BottomLeft;
+	else if( QRect( q->width() - c_dim - c_delta, q->height() - c_dim - c_delta,
+			c_dim, c_dim ).contains( pos ) )
+		return HandlerType::BottomRight;
+	else if( QRect( c_delta, q->height() / 2 - c_dim / 2, c_dim, c_dim )
+				.contains( pos ) )
+		return HandlerType::Left;
+	else if( QRect( q->width() / 2 - c_dim / 2, c_delta, c_dim, c_dim )
+				.contains( pos ) )
+		return HandlerType::Top;
+	else if( QRect( q->width() / 2 - c_dim / 2, q->height() - c_dim - c_delta,
+			c_dim, c_dim ).contains( pos ) )
+		return HandlerType::Bottom;
+	else if( QRect( q->width() - c_dim - c_delta, q->height() / 2 - c_dim / 2,
+			c_dim, c_dim ).contains( pos ) )
+		return HandlerType::Right;
+	else if( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim - c_delta * 4 )
+				.contains( pos ) )
+		return HandlerType::Control;
+	else
+		return HandlerType::Unknown;
 }
 
 
@@ -268,7 +249,9 @@ MainWindowPrivate::scale( QPainter & p )
 //
 
 MainWindow::MainWindow()
-	:	QWidget( Q_NULLPTR, Qt::FramelessWindowHint )
+	:	QWidget( Q_NULLPTR,
+			Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint |
+			Qt::WindowStaysOnTopHint )
 	,	d( new MainWindowPrivate( this ) )
 {
 	d->init();
@@ -276,12 +259,6 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-}
-
-void
-MainWindow::showWindow()
-{
-	show();
 }
 
 void
@@ -299,9 +276,7 @@ MainWindow::help()
 {
 	QMessageBox dlg( this );
 
-	dlg.setText( tr( "To hide Magnifier just press any key on keyboard. "
-		"To move Magnifier drag window. On hide event scaled screenshot will be "
-		"available in the system clipboard." ) );
+	dlg.setText( tr( "" ) );
 
 	dlg.exec();
 }
@@ -313,49 +288,48 @@ MainWindow::aboutQt()
 }
 
 void
-MainWindow::settings()
-{
-	OptsDialog dlg( d->m_cfg, this );
-
-	if( QDialog::Accepted == dlg.exec() )
-	{
-		resize( d->m_cfg.width(), d->m_cfg.height() );
-
-		d->capture();
-
-		update();
-
-		d->saveCfg();
-	}
-}
-
-void
 MainWindow::paintEvent( QPaintEvent * )
 {
 	QPainter p( this );
 
-	d->scale( p );
-
-	p.setPen( Qt::black );
+	p.setPen( QPen( Qt::red, 2 ) );
 
 	p.setBrush( Qt::NoBrush );
 
-	p.drawRect( 0, 0, width() - 1, height() - 1 );
-}
+	p.drawRect( c_dim / 2 + c_delta, c_dim / 2 + c_delta,
+		width() - c_dim - c_delta * 2, height() - c_dim - c_delta * 2 );
 
-void
-MainWindow::keyPressEvent( QKeyEvent * e )
-{
-	d->capture();
+	p.setBrush( Qt::red );
 
-	d->copy();
+	p.drawPie( QRect( c_delta, c_delta, c_dim, c_dim ),
+		0, 270 * 16 );
 
-	hide();
+	p.drawPie( QRect( width() - c_dim - c_delta, c_delta, c_dim, c_dim ),
+		180 * 16, -270 * 16 );
 
-	if( !d->m_sysTray )
-		QApplication::quit();
+	p.drawPie( QRect( c_delta, height() - c_dim - c_delta, c_dim, c_dim ),
+		90 * 16, 270 * 16 );
 
-	e->accept();
+	p.drawPie( QRect( width() - c_dim - c_delta,
+		height() - c_dim - c_delta, c_dim, c_dim ),
+		90 * 16, -270 * 16 );
+
+	p.drawPie( QRect( c_delta, height() / 2 - c_dim / 2, c_dim, c_dim ),
+		90 * 16, 180 * 16 );
+
+	p.drawPie( QRect( width() / 2 - c_dim / 2, c_delta, c_dim, c_dim ),
+		0, 180 * 16 );
+
+	p.drawPie( QRect( width() / 2 - c_dim / 2, height() - c_dim - c_delta,
+		c_dim, c_dim ),
+		0, -180 * 16 );
+
+	p.drawPie( QRect( width() - c_dim - c_delta, height() / 2 - c_dim / 2,
+		c_dim, c_dim ),
+		90 * 16, -180 * 16 );
+
+	p.drawPie( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim - c_delta * 4 ),
+		0, 180 * 16 );
 }
 
 void
@@ -363,42 +337,231 @@ MainWindow::mousePressEvent( QMouseEvent * e )
 {
 	d->m_pos = e->pos();
 
+	d->m_pressed = true;
+
 	e->accept();
 }
 
 void
 MainWindow::mouseMoveEvent( QMouseEvent * e )
 {
-	const QPoint delta = e->pos() - d->m_pos;
+	if( d->m_pressed )
+	{
+		const QPoint delta = e->pos() - d->m_pos;
 
-	move( pos() + delta );
+		switch( d->handlerType( e->pos() ) )
+		{
+			case MainWindowPrivate::HandlerType::TopLeft :
+			{
+				const QSize s( size() - QSize( delta.x(), delta.y() ) );
+
+				if( s.width() > c_minSize.width() ||
+					s.height() > c_minSize.height() )
+				{
+					move( pos() + delta );
+
+					resize( size() - QSize( delta.x(), delta.y() ) );
+				}
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::TopRight :
+			{
+
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::BottomLeft :
+			{
+
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::BottomRight :
+			{
+
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Left :
+			{
+
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Top :
+			{
+
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Bottom :
+			{
+
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Right :
+			{
+
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Control :
+			{
+
+			}
+				break;
+
+			default :
+			{
+				d->m_overrided = false;
+
+				QApplication::restoreOverrideCursor();
+			}
+		}
+	}
+	else
+	{
+		switch( d->handlerType( e->pos() ) )
+		{
+			case MainWindowPrivate::HandlerType::TopLeft :
+			{
+				if( !d->m_overrided )
+				{
+					d->m_overrided = true;
+
+					QApplication::setOverrideCursor(
+						QCursor( Qt::SizeFDiagCursor ) );
+				}
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::TopRight :
+			{
+				if( !d->m_overrided )
+				{
+					d->m_overrided = true;
+
+					QApplication::setOverrideCursor(
+						QCursor( Qt::SizeBDiagCursor ) );
+				}
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::BottomLeft :
+			{
+				if( !d->m_overrided )
+				{
+					d->m_overrided = true;
+
+					QApplication::setOverrideCursor(
+						QCursor( Qt::SizeBDiagCursor ) );
+				}
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::BottomRight :
+			{
+				if( !d->m_overrided )
+				{
+					d->m_overrided = true;
+
+					QApplication::setOverrideCursor(
+						QCursor( Qt::SizeFDiagCursor ) );
+				}
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Left :
+			{
+				if( !d->m_overrided )
+				{
+					d->m_overrided = true;
+
+					QApplication::setOverrideCursor(
+						QCursor( Qt::SizeHorCursor ) );
+				}
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Top :
+			{
+				if( !d->m_overrided )
+				{
+					d->m_overrided = true;
+
+					QApplication::setOverrideCursor(
+						QCursor( Qt::SizeVerCursor ) );
+				}
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Bottom :
+			{
+				if( !d->m_overrided )
+				{
+					d->m_overrided = true;
+
+					QApplication::setOverrideCursor(
+						QCursor( Qt::SizeVerCursor ) );
+				}
+			}
+				break;
+
+			case MainWindowPrivate::HandlerType::Right :
+			{
+				if( !d->m_overrided )
+				{
+					d->m_overrided = true;
+
+					QApplication::setOverrideCursor(
+						QCursor( Qt::SizeHorCursor ) );
+				}
+			}
+				break;
+
+			default :
+			{
+				if( d->m_overrided )
+				{
+					d->m_overrided = false;
+
+					QApplication::restoreOverrideCursor();
+				}
+			}
+		}
+	}
 
 	e->accept();
 }
 
 void
-MainWindow::showEvent( QShowEvent * e )
+MainWindow::mouseReleaseEvent( QMouseEvent * e )
 {
-	QScreen * screen = QApplication::primaryScreen();
+	if( d->m_pressed )
+	{
+		if( d->handlerType( e->pos() ) ==
+			MainWindowPrivate::HandlerType::Control )
+		{
 
-	if( const QWindow * window = windowHandle() )
-		screen = window->screen();
+		}
+
+		d->m_pressed = false;
+	}
 
 	e->accept();
-
-	if( !screen )
-		return;
-
-	move( screen->geometry().width() / 2 - d->m_cfg.width() / 2,
-		screen->geometry().height() / 2 - d->m_cfg.height() / 2 );
 }
 
 void
-MainWindow::moveEvent( QMoveEvent * e )
+MainWindow::leaveEvent( QEvent * event )
 {
-	d->capture();
+	if( d->m_overrided )
+	{
+		d->m_overrided = false;
 
-	update();
+		QApplication::restoreOverrideCursor();
+	}
 
-	e->accept();
+	event->accept();
 }

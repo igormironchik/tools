@@ -32,8 +32,6 @@ int main( int argc, char ** argv )
 {
 	QApplication app( argc, argv );
 
-	app.setQuitOnLastWindowClosed( false );
-
 	QIcon appIcon( ":/img/app_256x256.png" );
 	appIcon.addFile( ":/img/app_128x128.png" );
 	appIcon.addFile( ":/img/app_64x64.png" );
