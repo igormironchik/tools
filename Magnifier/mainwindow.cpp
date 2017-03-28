@@ -360,50 +360,102 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 				{
 					move( pos() + delta );
 
-					resize( size() - QSize( delta.x(), delta.y() ) );
+					resize( s );
 				}
 			}
 				break;
 
 			case MainWindowPrivate::HandlerType::TopRight :
 			{
+				const QSize s( size() + QSize( delta.x(), -delta.y() ) );
 
+				d->m_pos = QPoint( e->pos().x(), d->m_pos.y() );
+
+				if( s.width() > c_minSize.width() ||
+					s.height() > c_minSize.height() )
+				{
+					move( pos().x(), pos().y() + delta.y() );
+
+					resize( s );
+				}
 			}
 				break;
 
 			case MainWindowPrivate::HandlerType::BottomLeft :
 			{
+				const QSize s( size() + QSize( -delta.x(), delta.y() ) );
 
+				d->m_pos = QPoint( d->m_pos.x(), e->pos().y() );
+
+				if( s.width() > c_minSize.width() ||
+					s.height() > c_minSize.height() )
+				{
+					move( pos().x() + delta.x(), pos().y() );
+
+					resize( s );
+				}
 			}
 				break;
 
 			case MainWindowPrivate::HandlerType::BottomRight :
 			{
+				const QSize s( size() + QSize( delta.x(), delta.y() ) );
 
+				d->m_pos = e->pos();
+
+				if( s.width() > c_minSize.width() ||
+					s.height() > c_minSize.height() )
+				{
+					resize( s );
+				}
 			}
 				break;
 
 			case MainWindowPrivate::HandlerType::Left :
 			{
+				const int w = width() - delta.x();
 
+				if( w > c_minSize.width() )
+				{
+					move( pos().x() + delta.x(), pos().y() );
+
+					resize( w, height() );
+				}
 			}
 				break;
 
 			case MainWindowPrivate::HandlerType::Top :
 			{
+				const int h = height() - delta.y();
 
+				if( h > c_minSize.height() )
+				{
+					move( pos() + QPoint( 0, delta.y() ) );
+
+					resize( width(), h );
+				}
 			}
 				break;
 
 			case MainWindowPrivate::HandlerType::Bottom :
 			{
+				const int h = height() + delta.y();
 
+				d->m_pos = QPoint( d->m_pos.x(), e->pos().y() );
+
+				if( h > c_minSize.height() )
+					resize( width(), h );
 			}
 				break;
 
 			case MainWindowPrivate::HandlerType::Right :
 			{
+				const int w = width() + delta.x();
 
+				d->m_pos = QPoint( e->pos().x(), d->m_pos.y() );
+
+				if( w > c_minSize.width() )
+					resize( w, height() );
 			}
 				break;
 
@@ -414,17 +466,14 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 				break;
 
 			default :
-			{
-				d->m_overrided = false;
-
-				QApplication::restoreOverrideCursor();
-			}
+				break;
 		}
 	}
 	else
 	{
 		switch( d->handlerType( e->pos() ) )
 		{
+			case MainWindowPrivate::HandlerType::BottomRight :
 			case MainWindowPrivate::HandlerType::TopLeft :
 			{
 				if( !d->m_overrided )
@@ -438,17 +487,6 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 				break;
 
 			case MainWindowPrivate::HandlerType::TopRight :
-			{
-				if( !d->m_overrided )
-				{
-					d->m_overrided = true;
-
-					QApplication::setOverrideCursor(
-						QCursor( Qt::SizeBDiagCursor ) );
-				}
-			}
-				break;
-
 			case MainWindowPrivate::HandlerType::BottomLeft :
 			{
 				if( !d->m_overrided )
@@ -461,18 +499,7 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 			}
 				break;
 
-			case MainWindowPrivate::HandlerType::BottomRight :
-			{
-				if( !d->m_overrided )
-				{
-					d->m_overrided = true;
-
-					QApplication::setOverrideCursor(
-						QCursor( Qt::SizeFDiagCursor ) );
-				}
-			}
-				break;
-
+			case MainWindowPrivate::HandlerType::Right :
 			case MainWindowPrivate::HandlerType::Left :
 			{
 				if( !d->m_overrided )
@@ -486,17 +513,6 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 				break;
 
 			case MainWindowPrivate::HandlerType::Top :
-			{
-				if( !d->m_overrided )
-				{
-					d->m_overrided = true;
-
-					QApplication::setOverrideCursor(
-						QCursor( Qt::SizeVerCursor ) );
-				}
-			}
-				break;
-
 			case MainWindowPrivate::HandlerType::Bottom :
 			{
 				if( !d->m_overrided )
@@ -505,18 +521,6 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 
 					QApplication::setOverrideCursor(
 						QCursor( Qt::SizeVerCursor ) );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::Right :
-			{
-				if( !d->m_overrided )
-				{
-					d->m_overrided = true;
-
-					QApplication::setOverrideCursor(
-						QCursor( Qt::SizeHorCursor ) );
 				}
 			}
 				break;
