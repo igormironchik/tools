@@ -222,7 +222,7 @@ MainWindowPrivate::capture()
 	if( !screen )
 		return;
 
-	m_pixmap = screen->grabWindow( 0, 100, 100,//q->pos().x(), q->pos().y(),
+	m_pixmap = screen->grabWindow( 0, q->pos().x(), q->pos().y(),
 		m_cfg.width() / m_cfg.scale() + 1,
 		m_cfg.height() / m_cfg.scale() + 1 );
 
@@ -337,6 +337,8 @@ MainWindow::paintEvent( QPaintEvent * )
 	d->scale( p );
 
 	p.setPen( Qt::black );
+
+	p.setBrush( Qt::NoBrush );
 
 	p.drawRect( 0, 0, width() - 1, height() - 1 );
 }
