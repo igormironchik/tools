@@ -215,7 +215,7 @@ MainWindow::help()
 {
 	QMessageBox dlg( this );
 
-	dlg.setText( tr( "Select a region to manify."
+	dlg.setText( tr( "Select a region to magnify. "
 		"Launch menu and select zoom action you need." ) );
 
 	dlg.exec();

@@ -32,6 +32,7 @@
 #include <QClipboard>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QFileDialog>
 
 
 //
@@ -85,7 +86,7 @@ ZoomWindowPrivate::init()
 ZoomWindowPrivate::HandlerType
 ZoomWindowPrivate::handlerType( const QPoint & pos )
 {
-	if( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim - c_delta * 4 )
+	if( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim )
 				.contains( pos ) )
 		return HandlerType::Control;
 	else
@@ -127,7 +128,7 @@ ZoomWindow::paintEvent( QPaintEvent * )
 
 	p.setBrush( Qt::darkGreen );
 
-	p.drawPie( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim - c_delta * 4 ),
+	p.drawPie( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim ),
 		0, 180 * 16 );
 }
 
@@ -212,7 +213,12 @@ ZoomWindow::closeEvent( QCloseEvent * e )
 void
 ZoomWindow::save()
 {
+	const QString fileName =
+		QFileDialog::getSaveFileName( this, tr( "Select File Name..." ),
+			QString(), tr( "Image (*.png)" ) );
 
+	if( !fileName.isEmpty() )
+		d->m_pixmap.save( fileName );
 }
 
 void
