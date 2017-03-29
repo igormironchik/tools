@@ -25,7 +25,7 @@
 
 // Qt include.
 #include <QApplication>
-#include <QMenuBar>
+#include <QMenu>
 #include <QAction>
 #include <QMessageBox>
 #include <QPixmap>
@@ -86,6 +86,8 @@ public:
 	bool m_pressed;
 	//! Is cursor overrided?
 	bool m_overrided;
+	//! Move delta.
+	QPoint m_moveDelta;
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
@@ -121,57 +123,6 @@ MainWindowPrivate::init()
 	q->setMouseTracking( true );
 
 	q->setMinimumSize( c_minSize );
-
-//	if( QSystemTrayIcon::isSystemTrayAvailable() )
-//	{
-//		m_sysTray = true;
-
-//		QSystemTrayIcon * sysTray = new QSystemTrayIcon( q );
-
-//		QIcon icon( ":/img/app_256x256.png" );
-//		icon.addFile( ":/img/app_128x128.png" );
-//		icon.addFile( ":/img/app_64x64.png" );
-//		icon.addFile( ":/img/app_48x48.png" );
-//		icon.addFile( ":/img/app_32x32.png" );
-//		icon.addFile( ":/img/app_22x22.png" );
-//		icon.addFile( ":/img/app_16x16.png" );
-
-//		sysTray->setIcon( icon );
-
-//		QMenu * ctx = new QMenu( q );
-
-//		ctx->addAction( QIcon( ":/img/app_22x22.png" ),
-//			MainWindow::tr( "Show" ), q, &MainWindow::showWindow );
-
-//		ctx->addSeparator();
-
-//		ctx->addAction( QIcon( ":/img/help-about.png" ),
-//			MainWindow::tr( "About" ), q, &MainWindow::about );
-
-//		ctx->addAction( QIcon( ":/img/help-contents.png" ),
-//			MainWindow::tr( "Help" ), q, &MainWindow::help );
-
-//		ctx->addAction( QIcon( ":/img/qt.png" ),
-//			MainWindow::tr( "About Qt" ), q, &MainWindow::aboutQt );
-
-//		ctx->addSeparator();
-
-//		ctx->addAction( QIcon( ":/img/configure.png" ),
-//			MainWindow::tr( "Settings" ), q, &MainWindow::settings );
-
-//		ctx->addSeparator();
-
-//		ctx->addAction(
-//			QIcon( ":/img/application-exit.png" ),
-//			MainWindow::tr( "Quit" ), QApplication::instance(),
-//			&QApplication::quit );
-
-//		sysTray->setContextMenu( ctx );
-
-//		sysTray->show();
-//	}
-//	else
-//		m_sysTray = false;
 }
 
 QPixmap
@@ -182,8 +133,11 @@ MainWindowPrivate::capture()
 	if( const QWindow * window = q->windowHandle() )
 		screen = window->screen();
 
-	return ( screen ? screen->grabWindow( 0, q->pos().x(), q->pos().y(),
-		q->width(), q->height() ) : QPixmap() );
+	const int offset = c_delta + c_dim / 2 + ( c_dim % 2 ? 1 : 0 ) + 2;
+
+	return ( screen ? screen->grabWindow( 0,
+		q->pos().x() + offset, q->pos().y() + offset,
+		q->width() - offset * 2, q->height() - offset * 2 ) : QPixmap() );
 }
 
 void
@@ -276,7 +230,8 @@ MainWindow::help()
 {
 	QMessageBox dlg( this );
 
-	dlg.setText( tr( "" ) );
+	dlg.setText( tr( "Select a region to manify."
+		"Launch menu and select zoom action you need." ) );
 
 	dlg.exec();
 }
@@ -338,6 +293,8 @@ MainWindow::mousePressEvent( QMouseEvent * e )
 	d->m_pos = e->pos();
 
 	d->m_pressed = true;
+
+	d->m_moveDelta = QPoint( 0, 0 );
 
 	e->accept();
 }
@@ -461,7 +418,9 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 
 			case MainWindowPrivate::HandlerType::Control :
 			{
+				d->m_moveDelta += QPoint( qAbs( delta.x() ), qAbs( delta.y() ) );
 
+				move( pos() + delta );
 			}
 				break;
 
@@ -546,9 +505,39 @@ MainWindow::mouseReleaseEvent( QMouseEvent * e )
 	if( d->m_pressed )
 	{
 		if( d->handlerType( e->pos() ) ==
-			MainWindowPrivate::HandlerType::Control )
+			MainWindowPrivate::HandlerType::Control &&
+				d->m_moveDelta.manhattanLength() <= 3 )
 		{
+			QMenu menu( this );
 
+			menu.addAction( QIcon( ":/img/zoom-in.png" ),
+				tr( "2x" ), this, &MainWindow::x2 );
+
+			menu.addAction( QIcon( ":/img/zoom-in.png" ),
+				tr( "3x" ), this, &MainWindow::x3 );
+
+			menu.addAction( QIcon( ":/img/zoom-in.png" ),
+				tr( "5x" ), this, &MainWindow::x5 );
+
+			menu.addSeparator();
+
+			menu.addAction( QIcon( ":/img/help-about.png" ),
+				tr( "About" ), this, &MainWindow::about );
+
+			menu.addAction( QIcon( ":/img/help-contents.png" ),
+				tr( "Help" ), this, &MainWindow::help );
+
+			menu.addAction( QIcon( ":/img/qt.png" ),
+				tr( "About Qt" ), this, &MainWindow::aboutQt );
+
+			menu.addSeparator();
+
+			menu.addAction(
+				QIcon( ":/img/application-exit.png" ),
+				tr( "Quit" ), QApplication::instance(),
+				&QApplication::quit );
+
+			menu.exec( e->globalPos() );
 		}
 
 		d->m_pressed = false;
@@ -568,4 +557,46 @@ MainWindow::leaveEvent( QEvent * event )
 	}
 
 	event->accept();
+}
+
+void
+MainWindow::x2()
+{
+	QApplication::processEvents();
+
+	const QPixmap tmp = d->capture();
+
+	QPixmap pixmap( tmp.width() * 2, tmp.height() * 2 );
+
+	QPainter p( &pixmap );
+
+	d->scale( p, tmp.toImage(), 2 );
+}
+
+void
+MainWindow::x3()
+{
+	QApplication::processEvents();
+
+	const QPixmap tmp = d->capture();
+
+	QPixmap pixmap( tmp.width() * 3, tmp.height() * 3 );
+
+	QPainter p( &pixmap );
+
+	d->scale( p, tmp.toImage(), 3 );
+}
+
+void
+MainWindow::x5()
+{
+	QApplication::processEvents();
+
+	const QPixmap tmp = d->capture();
+
+	QPixmap pixmap( tmp.width() * 5, tmp.height() * 5 );
+
+	QPainter p( &pixmap );
+
+	d->scale( p, tmp.toImage(), 5 );
 }

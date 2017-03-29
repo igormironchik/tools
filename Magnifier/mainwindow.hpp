@@ -51,6 +51,12 @@ private slots:
 	void help();
 	//! About Qt.
 	void aboutQt();
+	//! Zoom 2x.
+	void x2();
+	//! Zoom 3x.
+	void x3();
+	//! Zoom 5x.
+	void x5();
 
 protected:
 	void paintEvent( QPaintEvent * ) Q_DECL_OVERRIDE;

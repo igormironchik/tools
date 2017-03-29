@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>img/qt.png</file>
+        <file>img/zoom-in.png</file>
         <file>img/application-exit.png</file>
         <file>img/help-about.png</file>
         <file>img/help-contents.png</file>
