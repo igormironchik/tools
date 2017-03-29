@@ -20,29 +20,23 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Magnifier include.
-#include "mainwindow.hpp"
+#ifndef MAGNIFIER__CONSTANTS_HPP__INCLUDED
+#define MAGNIFIER__CONSTANTS_HPP__INCLUDED
 
 // Qt include.
-#include <QApplication>
-#include <QIcon>
+#include <QSize>
 
+//! Size of the handler, i.e. diameter.
+static const int c_dim = 20;
 
-int main( int argc, char ** argv )
-{
-	QApplication app( argc, argv );
+//! Offset.
+static const int c_delta = 1;
 
-	QIcon appIcon( ":/img/app_256x256.png" );
-	appIcon.addFile( ":/img/app_128x128.png" );
-	appIcon.addFile( ":/img/app_64x64.png" );
-	appIcon.addFile( ":/img/app_48x48.png" );
-	appIcon.addFile( ":/img/app_32x32.png" );
-	appIcon.addFile( ":/img/app_22x22.png" );
-	appIcon.addFile( ":/img/app_16x16.png" );
-	app.setWindowIcon( appIcon );
+//! Minimus size of the window.
+static const QSize c_minSize = QSize(
+	c_dim * 5 + c_delta * 3, c_dim * 3 + c_delta * 5 );
 
-	MainWindow w;
-	w.show();
+//! Window offset.
+static const int c_windowOffset = c_delta + c_dim / 2 + ( c_dim % 2 ? 1 : 0 ) + 2;
 
-	return app.exec();
-}
+#endif // MAGNIFIER__CONSTANTS_HPP__INCLUDED

@@ -20,8 +20,10 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// LicenseChange include.
+// Magnifier include.
 #include "mainwindow.hpp"
+#include "constants.hpp"
+#include "zoomwindow.hpp"
 
 // Qt include.
 #include <QApplication>
@@ -30,15 +32,12 @@
 #include <QMessageBox>
 #include <QPixmap>
 #include <QScreen>
-#include <QClipboard>
 #include <QPainter>
 #include <QImage>
 #include <QDir>
 #include <QWindow>
 #include <QMouseEvent>
 #include <QCursor>
-
-#include <QDebug>
 
 
 //
@@ -58,8 +57,6 @@ public:
 	void init();
 	//! Capture.
 	QPixmap capture();
-	//! Copy image to clipboard.
-	void copy( const QPixmap & p );
 	//! Scale.
 	void scale( QPainter & p, const QImage & img, int factor );
 
@@ -91,11 +88,6 @@ public:
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
-
-static const int c_dim = 20;
-static const int c_delta = 1;
-static const QSize c_minSize = QSize(
-	c_dim * 5 + c_delta * 3, c_dim * 3 + c_delta * 5 );
 
 void
 MainWindowPrivate::init()
@@ -133,17 +125,10 @@ MainWindowPrivate::capture()
 	if( const QWindow * window = q->windowHandle() )
 		screen = window->screen();
 
-	const int offset = c_delta + c_dim / 2 + ( c_dim % 2 ? 1 : 0 ) + 2;
-
 	return ( screen ? screen->grabWindow( 0,
-		q->pos().x() + offset, q->pos().y() + offset,
-		q->width() - offset * 2, q->height() - offset * 2 ) : QPixmap() );
-}
-
-void
-MainWindowPrivate::copy( const QPixmap & p )
-{
-	QApplication::clipboard()->setPixmap( p );
+			q->pos().x() + c_windowOffset, q->pos().y() + c_windowOffset,
+			q->width() - c_windowOffset * 2, q->height() - c_windowOffset * 2 ) :
+		QPixmap() );
 }
 
 void
@@ -571,6 +556,12 @@ MainWindow::x2()
 	QPainter p( &pixmap );
 
 	d->scale( p, tmp.toImage(), 2 );
+
+	ZoomWindow * w = new ZoomWindow( pixmap );
+
+	w->move( pos() - QPoint( c_dim, c_dim ) );
+
+	w->show();
 }
 
 void
@@ -585,6 +576,12 @@ MainWindow::x3()
 	QPainter p( &pixmap );
 
 	d->scale( p, tmp.toImage(), 3 );
+
+	ZoomWindow * w = new ZoomWindow( pixmap );
+
+	w->move( pos() - QPoint( c_dim, c_dim ) );
+
+	w->show();
 }
 
 void
@@ -599,4 +596,10 @@ MainWindow::x5()
 	QPainter p( &pixmap );
 
 	d->scale( p, tmp.toImage(), 5 );
+
+	ZoomWindow * w = new ZoomWindow( pixmap );
+
+	w->move( pos() - QPoint( c_dim, c_dim ) );
+
+	w->show();
 }

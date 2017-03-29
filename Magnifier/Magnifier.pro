@@ -8,9 +8,12 @@ win32 {
     RC_FILE = app.rc
 }
 
-HEADERS = mainwindow.hpp
+HEADERS = mainwindow.hpp \
+    zoomwindow.hpp \
+    constants.hpp
 
 SOURCES = main.cpp \
-	mainwindow.cpp
+	mainwindow.cpp \
+    zoomwindow.cpp
 			
 RESOURCES = resources.qrc
