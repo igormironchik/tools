@@ -38,6 +38,8 @@
 #include <QWindow>
 #include <QMouseEvent>
 #include <QCursor>
+#include <QEventLoop>
+#include <QTimer>
 
 
 //
@@ -547,6 +549,10 @@ MainWindow::leaveEvent( QEvent * event )
 void
 MainWindow::x2()
 {
+	QEventLoop loop;
+	QTimer::singleShot( 1000, &loop, &QEventLoop::quit );
+	loop.exec();
+
 	QApplication::processEvents();
 
 	const QPixmap tmp = d->capture();
@@ -567,6 +573,10 @@ MainWindow::x2()
 void
 MainWindow::x3()
 {
+	QEventLoop loop;
+	QTimer::singleShot( 1000, &loop, &QEventLoop::quit );
+	loop.exec();
+
 	QApplication::processEvents();
 
 	const QPixmap tmp = d->capture();
@@ -587,6 +597,10 @@ MainWindow::x3()
 void
 MainWindow::x5()
 {
+	QEventLoop loop;
+	QTimer::singleShot( 1000, &loop, &QEventLoop::quit );
+	loop.exec();
+
 	QApplication::processEvents();
 
 	const QPixmap tmp = d->capture();
