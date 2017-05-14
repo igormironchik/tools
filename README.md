@@ -30,7 +30,7 @@ Deleted 48927 line(s)
 LicenseChange is a GUI application that find license in text files and changes it to the
 new one.
             
-![LicenseChange]( http://igor-mironchik.besaba.com/images/tools/license-change.png )
+![LicenseChange]( https://image.ibb.co/hZRHkk/license_change.png )
 
 # Getting from Repository
 
