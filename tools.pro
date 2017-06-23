@@ -4,7 +4,8 @@ TEMPLATE = subdirs
 SUBDIRS =	CodeForWeb \
 		GitStat \
 		LicenseChange \
-		Magnifier
+		Magnifier \
+		PhraseGen
 
 binDir.commands = mkdir bin
 
