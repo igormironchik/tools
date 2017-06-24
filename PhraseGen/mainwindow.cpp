@@ -130,10 +130,10 @@ MainWindow::generate()
 
 		if( length > 0 )
 		{
-			if( special > 0 )
-				special += length;
-			else if( lower > 0 )
+			if( lower > 0 )
 				lower += length;
+			else if( special > 0 )
+				special += length;
 			else if( digits > 0 )
 				digits += length;
 			else if( upper > 0 )
