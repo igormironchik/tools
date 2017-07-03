@@ -17,3 +17,5 @@ SOURCES = main.cpp \
     zoomwindow.cpp
 			
 RESOURCES = resources.qrc
+
+OTHER_FILES = README.md
