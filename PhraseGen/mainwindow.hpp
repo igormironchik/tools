@@ -51,6 +51,8 @@ private slots:
 	void generate();
 	//! Checkbox clicked.
 	void checkbox( int );
+	//! Copy.
+	void copy();
 
 private:
 	friend class MainWindowPrivate;

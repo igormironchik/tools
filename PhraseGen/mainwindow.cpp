@@ -31,6 +31,8 @@
 #include <QList>
 #include <QChar>
 #include <QLineEdit>
+#include <QClipboard>
+#include <QApplication>
 
 // C++ include.
 #include <random>
@@ -66,6 +68,8 @@ MainWindowPrivate::init()
 
 	QObject::connect( m_ui.m_btn, &QPushButton::clicked,
 		q, &MainWindow::generate );
+	QObject::connect( m_ui.m_copy, &QPushButton::clicked,
+		q, &MainWindow::copy );
 	QObject::connect( m_ui.m_digits, &QCheckBox::stateChanged,
 		q, &MainWindow::checkbox );
 	QObject::connect( m_ui.m_lower, &QCheckBox::stateChanged,
@@ -86,6 +90,8 @@ MainWindow::MainWindow()
 	:	d( new MainWindowPrivate( this ) )
 {
 	d->init();
+
+	generate();
 }
 
 MainWindow::~MainWindow()
@@ -183,6 +189,12 @@ MainWindow::checkbox( int )
 			d->m_ui.m_btn->setEnabled( false );
 	else
 		d->m_ui.m_btn->setEnabled( true );
+}
+
+void
+MainWindow::copy()
+{
+	QApplication::clipboard()->setText( d->m_ui.m_phrase->text() );
 }
 
 } /* namespace PhraseGen */

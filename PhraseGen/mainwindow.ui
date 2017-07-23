@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>394</width>
+    <width>401</width>
     <height>123</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Password Generator</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -27,6 +27,16 @@
       <widget class="QPushButton" name="m_btn">
        <property name="text">
         <string>Generate</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_copy">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Copy</string>
        </property>
       </widget>
      </item>
