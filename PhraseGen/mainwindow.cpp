@@ -47,7 +47,7 @@ namespace PhraseGen {
 
 class MainWindowPrivate {
 public:
-	MainWindowPrivate( MainWindow * parent )
+	explicit MainWindowPrivate( MainWindow * parent )
 		:	q( parent )
 	{
 	}

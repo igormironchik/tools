@@ -48,7 +48,7 @@
 
 class MainWindowPrivate {
 public:
-	MainWindowPrivate( MainWindow * parent )
+	explicit MainWindowPrivate( MainWindow * parent )
 		:	m_pressed( false )
 		,	m_overrided( false )
 		,	q( parent )

@@ -30,7 +30,7 @@
 
 class TextEditPrivate {
 public:
-	TextEditPrivate( TextEdit * parent )
+	explicit TextEditPrivate( TextEdit * parent )
 		:	q( parent )
 	{
 	}

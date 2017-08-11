@@ -41,7 +41,7 @@ class OptsDialog
 	Q_OBJECT
 
 public:
-	OptsDialog( QWidget * parent );
+	explicit OptsDialog( QWidget * parent );
 	~OptsDialog();
 
 	//! \return Should only one license be changed?

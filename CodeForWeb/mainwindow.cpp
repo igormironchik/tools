@@ -65,7 +65,7 @@ TextEdit::keyPressEvent( QKeyEvent * e )
 
 class MainWindowPrivate {
 public:
-	MainWindowPrivate( MainWindow * parent )
+	explicit MainWindowPrivate( MainWindow * parent )
 		:	q( parent )
 		,	m_edit( 0 )
 	{

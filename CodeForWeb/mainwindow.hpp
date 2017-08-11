@@ -44,7 +44,7 @@ signals:
 	void copyTriggered();
 
 public:
-	TextEdit( QWidget * parent = 0 );
+	explicit TextEdit( QWidget * parent = 0 );
 	~TextEdit();
 
 protected:

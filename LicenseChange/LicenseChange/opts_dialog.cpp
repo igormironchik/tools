@@ -34,7 +34,7 @@
 
 class OptsDialogPrivate {
 public:
-	OptsDialogPrivate( OptsDialog * parent )
+	explicit OptsDialogPrivate( OptsDialog * parent )
 		:	q( parent )
 	{
 	}

@@ -58,7 +58,7 @@ class CentralWidget
 	:	public QWidget
 {
 public:
-	CentralWidget( QWidget * parent = Q_NULLPTR )
+	explicit CentralWidget( QWidget * parent = Q_NULLPTR )
 		:	QWidget( parent )
 		,	m_view( Q_NULLPTR )
 		,	m_oldLicense( Q_NULLPTR )
@@ -166,7 +166,7 @@ class ProgressBar
 	:	public QWidget
 {
 public:
-	ProgressBar( QWidget * parent )
+	explicit ProgressBar( QWidget * parent )
 		:	QWidget( parent )
 		,	m_progress( new QProgressBar( this ) )
 		,	m_cancel( new QToolButton( this ) )
@@ -199,7 +199,7 @@ public:
 
 class MainWindowPrivate {
 public:
-	MainWindowPrivate( MainWindow * parent )
+	explicit MainWindowPrivate( MainWindow * parent )
 		:	m_centralWidget( Q_NULLPTR )
 		,	m_run( Q_NULLPTR )
 		,	m_skipLine( Q_NULLPTR )

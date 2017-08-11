@@ -51,7 +51,7 @@ signals:
 	void focusLost();
 
 public:
-	TextEdit( QWidget * parent = Q_NULLPTR );
+	explicit TextEdit( QWidget * parent = Q_NULLPTR );
 	~TextEdit();
 
 public slots:

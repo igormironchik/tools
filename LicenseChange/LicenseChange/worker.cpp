@@ -203,12 +203,11 @@ Worker::stopJob()
 void
 Worker::run()
 {
-	int i = 1;
-	int foundCount = 0;
-
 	if( d->m_isLicenseCorrect )
 	{
 		QStringList filesWithoutLicense;
+		int i = 1;
+		int foundCount = 0;
 
 		foreach( const QString & fileName, d->m_files )
 		{
