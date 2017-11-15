@@ -27,62 +27,48 @@
 #include <QDebug>
 #include <QProcess>
 
-// QtArg include.
-#include <QtArg/Arg>
-#include <QtArg/Help>
-#include <QtArg/CmdLine>
-#include <QtArg/Exceptions>
-#include <QtArg/MultiArg>
+// Args include.
+#include <Args/all.hpp>
 
 
 int main( int argc, char ** argv )
 {
-	QStringList authorName;
+	QVector< Args::String > authorName;
 	QString beforeDate;
 	QString afterDate;
 
 	try {
-		QtMultiArg a( QLatin1Char( 'a' ), QLatin1String( "author" ),
-			QLatin1String( "Author's name. Can be defined more then one time "
-				"to specify different authors of the selection." ), true, true );
-		QtArg after( QLatin1String( "after" ),
-			QLatin1String( "Show stat for commits more recent "
-						   "than a specific date. Use git format of the date." ),
-				false, true );
-		QtArg before( QLatin1String( "before" ),
-			QLatin1String( "Show stat for commits older than "
-						   "a specific date. Use git format of the date." ),
-			false, true );
+		Args::CmdLine cmd;
 
-		QtArgHelp help;
-		help.printer()->setExecutableName( argv[ 0 ] );
-		help.printer()->setProgramDescription( QLatin1String( "Show statistics "
-			"for Git repository." ) );
+		cmd.addMultiArg( QLatin1Char( 'a' ), QLatin1String( "author" ),
+			true, true, QLatin1String( "Author's name. Can be defined more then "
+				"one time to specify different authors of the selection." ) )
+			.addArgWithNameOnly( QLatin1String( "after" ), true, false,
+				QLatin1String( "Show stat for commits more recent "
+					"than a specific date. Use git format of the date." ) )
+			.addArgWithNameOnly( QLatin1String( "before" ), true, false,
+				QLatin1String( "Show stat for commits older than "
+					"a specific date. Use git format of the date." ) )
+			.addHelp( true, argv[ 0 ], QLatin1String( "Show statistics "
+				"for Git repository." ) );
 
-		QtArgCmdLine cmd( argc, argv );
+		cmd.parse( argc, argv );
 
-		cmd.addParseable( a );
-		cmd.addParseable( help );
-		cmd.addParseable( before );
-		cmd.addParseable( after );
+		authorName = cmd.values( QLatin1String( "-a" ) );
 
-		cmd.parse();
+		if( cmd.isDefined( QLatin1String( "--before" ) ) )
+			beforeDate = cmd.value( QLatin1String( "--before" ) );
 
-		authorName = a.values();
-
-		if( before.isDefined() )
-			beforeDate = before.value();
-
-		if( after.isDefined() )
-			afterDate = after.value();
+		if( cmd.isDefined( QLatin1String( "--after" ) ) )
+			afterDate = cmd.value( QLatin1String( "--after" ) );
 	}
-	catch( const QtArgHelpHasPrintedEx & )
+	catch( const Args::HelpHasBeenPrintedException & )
 	{
 		return 0;
 	}
-	catch( const QtArgBaseException & x )
+	catch( const Args::BaseException & x )
 	{
-		qDebug() << x.whatAsQString();
+		qDebug() << x.desc() << "\n";
 
 		return 1;
 	}
