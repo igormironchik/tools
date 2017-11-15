@@ -68,7 +68,9 @@ int main( int argc, char ** argv )
 	}
 	catch( const Args::BaseException & x )
 	{
-		qDebug() << x.desc() << "\n";
+		QTextStream out( stdout );
+
+		out << x.desc() << "\n";
 
 		return 1;
 	}
