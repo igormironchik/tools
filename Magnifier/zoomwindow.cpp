@@ -34,6 +34,8 @@
 #include <QMouseEvent>
 #include <QFileDialog>
 
+#include <QDebug>
+
 
 //
 // ZoomWindowPrivate
@@ -241,12 +243,17 @@ ZoomWindow::contextMenuEvent( QContextMenuEvent * e )
 void
 ZoomWindow::save()
 {
-	const QString fileName =
+	QString fileName =
 		QFileDialog::getSaveFileName( this, tr( "Select File Name..." ),
-			QString(), tr( "Image (*.png)" ) );
+			QString(), tr( "PNG (*.png)" ) );
 
 	if( !fileName.isEmpty() )
+	{
+		if( !fileName.endsWith( QLatin1String( ".png" ), Qt::CaseInsensitive ) )
+			fileName.append( QLatin1String( ".png" ) );
+
 		d->m_pixmap.save( fileName );
+	}
 }
 
 void
