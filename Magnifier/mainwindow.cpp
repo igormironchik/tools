@@ -40,6 +40,7 @@
 #include <QCursor>
 #include <QEventLoop>
 #include <QTimer>
+#include <QContextMenuEvent>
 
 
 //
@@ -61,6 +62,8 @@ public:
 	QPixmap capture();
 	//! Scale.
 	void scale( QPainter & p, const QImage & img, int factor );
+    //! Show menu.
+	void showMenu( const QPoint & pos );
 
 	//! Type of the handler.
 	enum class HandlerType {
@@ -182,6 +185,41 @@ MainWindowPrivate::handlerType( const QPoint & pos )
 		return HandlerType::Control;
 	else
 		return HandlerType::Unknown;
+}
+
+void
+MainWindowPrivate::showMenu( const QPoint & pos )
+{
+	QMenu menu( q );
+
+	menu.addAction( QIcon( ":/img/zoom-in.png" ),
+		MainWindow::tr( "2x" ), q, &MainWindow::x2 );
+
+	menu.addAction( QIcon( ":/img/zoom-in.png" ),
+		MainWindow::tr( "3x" ), q, &MainWindow::x3 );
+
+	menu.addAction( QIcon( ":/img/zoom-in.png" ),
+		MainWindow::tr( "5x" ), q, &MainWindow::x5 );
+
+	menu.addSeparator();
+
+	menu.addAction( QIcon( ":/img/help-about.png" ),
+		MainWindow::tr( "About" ), q, &MainWindow::about );
+
+	menu.addAction( QIcon( ":/img/help-contents.png" ),
+		MainWindow::tr( "Help" ), q, &MainWindow::help );
+
+	menu.addAction( QIcon( ":/img/qt.png" ),
+		MainWindow::tr( "About Qt" ), q, &MainWindow::aboutQt );
+
+	menu.addSeparator();
+
+	menu.addAction(
+		QIcon( ":/img/application-exit.png" ),
+		MainWindow::tr( "Quit" ), QApplication::instance(),
+		&QApplication::quit );
+
+	menu.exec( pos );
 }
 
 
@@ -495,36 +533,7 @@ MainWindow::mouseReleaseEvent( QMouseEvent * e )
 			MainWindowPrivate::HandlerType::Control &&
 				d->m_moveDelta.manhattanLength() <= 3 )
 		{
-			QMenu menu( this );
-
-			menu.addAction( QIcon( ":/img/zoom-in.png" ),
-				tr( "2x" ), this, &MainWindow::x2 );
-
-			menu.addAction( QIcon( ":/img/zoom-in.png" ),
-				tr( "3x" ), this, &MainWindow::x3 );
-
-			menu.addAction( QIcon( ":/img/zoom-in.png" ),
-				tr( "5x" ), this, &MainWindow::x5 );
-
-			menu.addSeparator();
-
-			menu.addAction( QIcon( ":/img/help-about.png" ),
-				tr( "About" ), this, &MainWindow::about );
-
-			menu.addAction( QIcon( ":/img/help-contents.png" ),
-				tr( "Help" ), this, &MainWindow::help );
-
-			menu.addAction( QIcon( ":/img/qt.png" ),
-				tr( "About Qt" ), this, &MainWindow::aboutQt );
-
-			menu.addSeparator();
-
-			menu.addAction(
-				QIcon( ":/img/application-exit.png" ),
-				tr( "Quit" ), QApplication::instance(),
-				&QApplication::quit );
-
-			menu.exec( e->globalPos() );
+			d->showMenu( e->globalPos() );
 		}
 
 		d->m_pressed = false;
@@ -544,6 +553,14 @@ MainWindow::leaveEvent( QEvent * event )
 	}
 
 	event->accept();
+}
+
+void
+MainWindow::contextMenuEvent( QContextMenuEvent * e )
+{
+	d->showMenu( e->globalPos() );
+
+	e->accept();
 }
 
 void

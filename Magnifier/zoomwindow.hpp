@@ -56,6 +56,7 @@ protected:
 	void mouseMoveEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
 	void mouseReleaseEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
 	void closeEvent( QCloseEvent * e ) Q_DECL_OVERRIDE;
+	void contextMenuEvent( QContextMenuEvent * e ) Q_DECL_OVERRIDE;
 
 private:
 	friend class ZoomWindowPrivate;

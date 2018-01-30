@@ -64,6 +64,7 @@ protected:
 	void mouseMoveEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
 	void mouseReleaseEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
 	void leaveEvent( QEvent * event ) Q_DECL_OVERRIDE;
+	void contextMenuEvent( QContextMenuEvent * e ) Q_DECL_OVERRIDE;
 
 private:
 	friend class MainWindowPrivate;

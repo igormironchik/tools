@@ -59,6 +59,8 @@ public:
 
 	//! \return Type of the handler by the pos.
 	HandlerType handlerType( const QPoint & pos );
+	//! Show context menu.
+	void showMenu( const QPoint & pos );
 
 	//! Pixmap.
 	QPixmap m_pixmap;
@@ -91,6 +93,33 @@ ZoomWindowPrivate::handlerType( const QPoint & pos )
 		return HandlerType::Control;
 	else
 		return HandlerType::Unknown;
+}
+
+void
+ZoomWindowPrivate::showMenu( const QPoint & pos )
+{
+	QMenu menu( q );
+
+	menu.addAction( QIcon( ":/img/document-save.png" ),
+		ZoomWindow::tr( "Save As" ), q, &ZoomWindow::save );
+
+	menu.addAction( QIcon( ":/img/edit-copy.png" ),
+		ZoomWindow::tr( "Copy to Clipboard" ), q,
+		&ZoomWindow::copy );
+
+	menu.addSeparator();
+
+	menu.addAction( QIcon( ":/img/dialog-close.png" ),
+		ZoomWindow::tr( "Close Window" ), q, &QWidget::close );
+
+	menu.addSeparator();
+
+	menu.addAction(
+		QIcon( ":/img/application-exit.png" ),
+		ZoomWindow::tr( "Quit" ), QApplication::instance(),
+		&QApplication::quit );
+
+	menu.exec( pos );
 }
 
 
@@ -172,28 +201,7 @@ ZoomWindow::mouseReleaseEvent( QMouseEvent * e )
 			ZoomWindowPrivate::HandlerType::Control &&
 				d->m_moveDelta.manhattanLength() <= 3 )
 		{
-			QMenu menu( this );
-
-			menu.addAction( QIcon( ":/img/document-save.png" ),
-				tr( "Save As" ), this, &ZoomWindow::save );
-
-			menu.addAction( QIcon( ":/img/edit-copy.png" ),
-				tr( "Copy to Clipboard" ), this,
-				&ZoomWindow::copy );
-
-			menu.addSeparator();
-
-			menu.addAction( QIcon( ":/img/dialog-close.png" ),
-				tr( "Close Window" ), this, &QWidget::close );
-
-			menu.addSeparator();
-
-			menu.addAction(
-				QIcon( ":/img/application-exit.png" ),
-				tr( "Quit" ), QApplication::instance(),
-				&QApplication::quit );
-
-			menu.exec( e->globalPos() );
+			d->showMenu( e->globalPos() );
 		}
 
 		d->m_pressed = false;
@@ -206,6 +214,14 @@ void
 ZoomWindow::closeEvent( QCloseEvent * e )
 {
 	deleteLater();
+
+	e->accept();
+}
+
+void
+ZoomWindow::contextMenuEvent( QContextMenuEvent * e )
+{
+	d->showMenu( e->globalPos() );
 
 	e->accept();
 }
