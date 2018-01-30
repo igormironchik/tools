@@ -173,11 +173,14 @@ ZoomWindow::paintEvent( QPaintEvent * )
 void
 ZoomWindow::mousePressEvent( QMouseEvent * e )
 {
-	d->m_pos = e->pos();
+	if( e->button() == Qt::LeftButton )
+	{
+		d->m_pos = e->pos();
 
-	d->m_pressed = true;
+		d->m_pressed = true;
 
-	d->m_moveDelta = QPoint( 0, 0 );
+		d->m_moveDelta = QPoint( 0, 0 );
+	}
 
 	e->accept();
 }
