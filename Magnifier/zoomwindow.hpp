@@ -44,6 +44,8 @@ public:
 	ZoomWindow( const QPixmap & p, QWidget * parent = Q_NULLPTR );
 	~ZoomWindow();
 
+	QSize sizeHint() const Q_DECL_OVERRIDE;
+
 private slots:
 	//! Save.
 	void save();

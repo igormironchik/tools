@@ -140,10 +140,19 @@ ZoomWindow::~ZoomWindow()
 {
 }
 
+QSize
+ZoomWindow::sizeHint() const
+{
+	return QSize( c_windowOffset * 2 + d->m_pixmap.width(),
+		c_windowOffset * 2 + d->m_pixmap.height() );
+}
+
 void
 ZoomWindow::paintEvent( QPaintEvent * )
 {
 	QPainter p( this );
+
+	p.setClipRect( QRect( 0, 0, sizeHint().width(), sizeHint().height() ) );
 
 	p.drawPixmap( c_windowOffset, c_windowOffset, d->m_pixmap.width(),
 		d->m_pixmap.height(), d->m_pixmap );
@@ -153,7 +162,8 @@ ZoomWindow::paintEvent( QPaintEvent * )
 	p.setBrush( Qt::NoBrush );
 
 	p.drawRect( c_dim / 2 + c_delta, c_dim / 2 + c_delta,
-		width() - c_dim - c_delta * 2, height() - c_dim - c_delta * 2 );
+		sizeHint().width() - c_dim - c_delta * 2,
+		sizeHint().height() - c_dim - c_delta * 2 );
 
 	p.setBrush( Qt::darkGreen );
 
