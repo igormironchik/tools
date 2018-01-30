@@ -79,8 +79,7 @@ ZoomWindowPrivate::init()
 {
 	q->setAutoFillBackground( false );
 
-	q->resize( m_pixmap.width() + c_windowOffset * 2,
-		m_pixmap.height() + c_windowOffset * 2 );
+	q->resize( q->sizeHint() );
 
 	q->setAttribute( Qt::WA_TranslucentBackground );
 }
