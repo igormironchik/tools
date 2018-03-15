@@ -42,8 +42,6 @@
 #include <QTimer>
 #include <QContextMenuEvent>
 
-#include <QDebug>
-
 
 //
 // MainWindowPrivate
