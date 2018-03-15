@@ -30,7 +30,7 @@
 static const int c_dim = 20;
 
 //! Offset.
-static const int c_delta = 1;
+static const int c_delta = 25;
 
 //! Minimus size of the window.
 static const QSize c_minSize = QSize(

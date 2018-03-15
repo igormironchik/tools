@@ -159,31 +159,26 @@ MainWindowPrivate::scale( QPainter & p, const QImage & img, int factor )
 MainWindowPrivate::HandlerType
 MainWindowPrivate::handlerType( const QPoint & pos )
 {
-	if( QRect( c_delta, c_delta, c_dim, c_dim ).contains( pos ) )
+	const int cw = (qreal) q->width() / 4.0;
+	const int ch = (qreal) q->height() / 4.0;
+
+	if( QRect( 0, 0, c_delta + c_dim, ch ).contains( pos ) )
 		return HandlerType::TopLeft;
-	else if( QRect( q->width() - c_dim - c_delta, c_delta, c_dim, c_dim )
-				.contains( pos ) )
+	else if( QRect( q->width() - cw, 0, cw, ch ).contains( pos ) )
 		return HandlerType::TopRight;
-	else if( QRect( c_delta, q->height() - c_dim - c_delta, c_dim, c_dim )
-				.contains( pos ) )
+	else if( QRect( 0, q->height() - ch, cw, ch ).contains( pos ) )
 		return HandlerType::BottomLeft;
-	else if( QRect( q->width() - c_dim - c_delta, q->height() - c_dim - c_delta,
-			c_dim, c_dim ).contains( pos ) )
+	else if( QRect( q->width() - cw, q->height() - ch, cw, ch ).contains( pos ) )
 		return HandlerType::BottomRight;
-	else if( QRect( c_delta, q->height() / 2 - c_dim / 2, c_dim, c_dim )
-				.contains( pos ) )
+	else if( QRect( 0, q->height() / 2 - ch / 2, cw, ch ).contains( pos ) )
 		return HandlerType::Left;
-	else if( QRect( q->width() / 2 - c_dim / 2, c_delta, c_dim, c_dim )
-				.contains( pos ) )
+	else if( QRect( q->width() / 2 - c_dim / 2, 0, c_dim, ch ).contains( pos ) )
 		return HandlerType::Top;
-	else if( QRect( q->width() / 2 - c_dim / 2, q->height() - c_dim - c_delta,
-			c_dim, c_dim ).contains( pos ) )
+	else if( QRect( q->width() / 2 - cw / 2, q->height() - ch, cw, ch ).contains( pos ) )
 		return HandlerType::Bottom;
-	else if( QRect( q->width() - c_dim - c_delta, q->height() / 2 - c_dim / 2,
-			c_dim, c_dim ).contains( pos ) )
+	else if( QRect( q->width() - cw, q->height() / 2 - ch / 2, cw, ch ).contains( pos ) )
 		return HandlerType::Right;
-	else if( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim - c_delta * 4 )
-				.contains( pos ) )
+	else if( QRect( c_dim + c_delta + 1, 0, c_dim, ch ).contains( pos ) )
 		return HandlerType::Control;
 	else
 		return HandlerType::Unknown;
@@ -310,7 +305,7 @@ MainWindow::paintEvent( QPaintEvent * )
 		c_dim, c_dim ),
 		90 * 16, -180 * 16 );
 
-	p.drawPie( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim - c_delta * 4 ),
+	p.drawPie( QRect( c_dim + c_delta + 1, c_delta, c_dim, c_dim ),
 		0, 180 * 16 );
 }
 

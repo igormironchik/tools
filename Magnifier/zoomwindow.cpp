@@ -89,8 +89,7 @@ ZoomWindowPrivate::init()
 ZoomWindowPrivate::HandlerType
 ZoomWindowPrivate::handlerType( const QPoint & pos )
 {
-	if( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim )
-				.contains( pos ) )
+	if( q->rect().contains( pos ) )
 		return HandlerType::Control;
 	else
 		return HandlerType::Unknown;
@@ -168,7 +167,7 @@ ZoomWindow::paintEvent( QPaintEvent * )
 
 	p.setBrush( Qt::darkGreen );
 
-	p.drawPie( QRect( c_dim + c_delta * 2, c_delta, c_dim, c_dim ),
+	p.drawPie( QRect( c_dim + c_delta + 1, c_delta, c_dim, c_dim ),
 		0, 180 * 16 );
 }
 
