@@ -193,13 +193,9 @@ ZoomWindow::mouseMoveEvent( QMouseEvent * e )
 	{
 		const QPoint delta = e->pos() - d->m_pos;
 
-		if( d->handlerType( e->pos() ) ==
-			ZoomWindowPrivate::HandlerType::Control )
-		{
-			d->m_moveDelta += QPoint( qAbs( delta.x() ), qAbs( delta.y() ) );
+		d->m_moveDelta += QPoint( qAbs( delta.x() ), qAbs( delta.y() ) );
 
-			move( pos() + delta );
-		}
+		move( pos() + delta );
 	}
 
 	e->accept();
@@ -210,12 +206,8 @@ ZoomWindow::mouseReleaseEvent( QMouseEvent * e )
 {
 	if( d->m_pressed )
 	{
-		if( d->handlerType( e->pos() ) ==
-			ZoomWindowPrivate::HandlerType::Control &&
-				d->m_moveDelta.manhattanLength() <= 3 )
-		{
+		if( d->m_moveDelta.manhattanLength() <= 3 )
 			d->showMenu( e->globalPos() );
-		}
 
 		d->m_pressed = false;
 	}

@@ -52,6 +52,7 @@ public:
 	explicit MainWindowPrivate( MainWindow * parent )
 		:	m_pressed( false )
 		,	m_overrided( false )
+		,	m_curHandler( HandlerType::Unknown )
 		,	q( parent )
 	{
 	}
@@ -88,6 +89,8 @@ public:
 	bool m_pressed;
 	//! Is cursor overrided?
 	bool m_overrided;
+	//! Current handler type.
+	HandlerType m_curHandler;
 	//! Move delta.
 	QPoint m_moveDelta;
 	//! Parent.
@@ -317,6 +320,8 @@ MainWindow::mousePressEvent( QMouseEvent * e )
 		d->m_pressed = true;
 
 		d->m_moveDelta = QPoint( 0, 0 );
+
+		d->m_curHandler = d->handlerType( d->m_pos );
 	}
 
 	e->accept();
@@ -329,7 +334,7 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 	{
 		const QPoint delta = e->pos() - d->m_pos;
 
-		switch( d->handlerType( e->pos() ) )
+		switch( d->m_curHandler )
 		{
 			case MainWindowPrivate::HandlerType::TopLeft :
 			{
@@ -527,15 +532,16 @@ MainWindow::mouseReleaseEvent( QMouseEvent * e )
 {
 	if( d->m_pressed )
 	{
-		if( d->handlerType( e->pos() ) ==
-			MainWindowPrivate::HandlerType::Control &&
-				d->m_moveDelta.manhattanLength() <= 3 )
+		if( d->m_curHandler == MainWindowPrivate::HandlerType::Control &&
+			d->m_moveDelta.manhattanLength() <= 3 )
 		{
 			d->showMenu( e->globalPos() );
 		}
 
 		d->m_pressed = false;
 	}
+
+	d->m_curHandler = MainWindowPrivate::HandlerType::Unknown;
 
 	e->accept();
 }
