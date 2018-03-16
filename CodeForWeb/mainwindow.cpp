@@ -25,10 +25,9 @@
 
 // Qt include.
 #include <QTextCursor>
-#include <QClipboard>
-#include <QApplication>
-#include <QKeyEvent>
+#include <QMimeData>
 #include <QMenuBar>
+#include <QApplication>
 
 
 //
@@ -45,17 +44,21 @@ TextEdit::~TextEdit()
 {
 }
 
-void
-TextEdit::keyPressEvent( QKeyEvent * e )
+QMimeData *
+TextEdit::createMimeDataFromSelection() const
 {
-	if( e == QKeySequence::Copy )
-	{
-		emit copyTriggered();
+	QString sel = textCursor().selectedText();
 
-		e->accept();
-	}
-	else
-		QTextEdit::keyPressEvent( e );
+	sel.replace( QLatin1Char( '\t' ), QLatin1String( "  " ) );
+	sel.replace( QLatin1Char( '&' ), QLatin1String( "&amp;" ) );
+	sel.replace( QLatin1Char( '<' ), QLatin1String( "&lt;" ) );
+	sel.replace( QLatin1Char( '>' ), QLatin1String( "&gt;" ) );
+	sel.replace( QChar( 0x2029 ), QLatin1String( "\n" ) );
+
+	auto * mime = new QMimeData;
+	mime->setText( sel );
+
+	return mime;
 }
 
 
@@ -94,9 +97,6 @@ MainWindowPrivate::init()
 	q->menuBar()->addMenu( MainWindow::tr( "&File" ) )->addAction(
 		QIcon( ":/img/application-exit.png" ), MainWindow::tr( "Quit" ),
 			qApp, SLOT( quit() ), MainWindow::tr( "Ctrl+Q" ) );
-
-	MainWindow::connect( m_edit, &TextEdit::copyTriggered,
-		q, &MainWindow::copy );
 }
 
 
@@ -112,22 +112,4 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-}
-
-void
-MainWindow::copy()
-{
-	if( d->m_edit->textCursor().hasSelection() )
-	{
-		QString sel = d->m_edit->textCursor().selectedText();
-
-		sel.replace( QLatin1Char( '\t' ), QLatin1String( "  " ) );
-		sel.replace( QLatin1Char( '&' ), QLatin1String( "&amp;" ) );
-		sel.replace( QLatin1Char( '<' ), QLatin1String( "&lt;" ) );
-		sel.replace( QLatin1Char( '>' ), QLatin1String( "&gt;" ) );
-		sel.replace( QChar( 0x2029 ), QLatin1String( "\n" ) );
-
-		QClipboard * clipboard = QApplication::clipboard();
-		clipboard->setText( sel );
-	}
 }

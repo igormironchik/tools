@@ -39,16 +39,12 @@ class TextEdit
 {
 	Q_OBJECT
 
-signals:
-	//! Copy.
-	void copyTriggered();
-
 public:
 	explicit TextEdit( QWidget * parent = 0 );
 	~TextEdit();
 
 protected:
-	void keyPressEvent( QKeyEvent * e ) Q_DECL_OVERRIDE;
+	QMimeData * createMimeDataFromSelection() const Q_DECL_OVERRIDE;
 }; // class TextEdit
 
 
@@ -67,10 +63,6 @@ class MainWindow
 public:
 	MainWindow();
 	~MainWindow();
-
-private slots:
-	//! Copy.
-	void copy();
 
 private:
 	friend class MainWindowPrivate;
