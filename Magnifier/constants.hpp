@@ -20,23 +20,16 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MAGNIFIER__CONSTANTS_HPP__INCLUDED
-#define MAGNIFIER__CONSTANTS_HPP__INCLUDED
+#ifndef MAGNIFIER_CONSTANTS_HPP_INCLUDED
+#define MAGNIFIER_CONSTANTS_HPP_INCLUDED
 
 // Qt include.
 #include <QSize>
 
-//! Size of the handler, i.e. diameter.
-static const int c_dim = 20;
+//! Minimum size of the window.
+static const QSize c_minSize = QSize( 20, 20 );
 
-//! Offset.
-static const int c_delta = 25;
+//! Start size.
+static const QSize c_startSize = QSize( 150, 150 );
 
-//! Minimus size of the window.
-static const QSize c_minSize = QSize(
-	c_dim * 5 + c_delta * 3, c_dim * 3 + c_delta * 5 );
-
-//! Window offset.
-static const int c_windowOffset = c_delta + c_dim / 2 + ( c_dim % 2 ? 1 : 0 ) + 2;
-
-#endif // MAGNIFIER__CONSTANTS_HPP__INCLUDED
+#endif // MAGNIFIER_CONSTANTS_HPP_INCLUDED

@@ -53,14 +53,6 @@ public:
 	//! Init.
 	void init();
 
-	//! Type of the handler.
-	enum class HandlerType {
-		Control,
-		Unknown
-	}; // enum class HandlerType
-
-	//! \return Type of the handler by the pos.
-	HandlerType handlerType( const QPoint & pos );
 	//! Show context menu.
 	void showMenu( const QPoint & pos );
 
@@ -68,10 +60,10 @@ public:
 	QPixmap m_pixmap;
 	//! Position of the mouse cursor.
 	QPoint m_pos;
-	//! Is mouse button pressed?
-	bool m_pressed;
 	//! Move delta.
 	QPoint m_moveDelta;
+	//! Is mouse button pressed?
+	bool m_pressed;
 	//! Parent.
 	ZoomWindow * q;
 }; // class ZoomWindowPrivate
@@ -84,15 +76,6 @@ ZoomWindowPrivate::init()
 	q->resize( q->sizeHint() );
 
 	q->setAttribute( Qt::WA_TranslucentBackground );
-}
-
-ZoomWindowPrivate::HandlerType
-ZoomWindowPrivate::handlerType( const QPoint & pos )
-{
-	if( q->rect().contains( pos ) )
-		return HandlerType::Control;
-	else
-		return HandlerType::Unknown;
 }
 
 void
@@ -143,8 +126,7 @@ ZoomWindow::~ZoomWindow()
 QSize
 ZoomWindow::sizeHint() const
 {
-	return QSize( c_windowOffset * 2 + d->m_pixmap.width(),
-		c_windowOffset * 2 + d->m_pixmap.height() );
+	return QSize( d->m_pixmap.width() + 4, d->m_pixmap.height() + 4 );
 }
 
 void
@@ -154,21 +136,14 @@ ZoomWindow::paintEvent( QPaintEvent * )
 
 	p.setClipRect( QRect( 0, 0, sizeHint().width(), sizeHint().height() ) );
 
-	p.drawPixmap( c_windowOffset, c_windowOffset, d->m_pixmap.width(),
+	p.drawPixmap( 2, 2, d->m_pixmap.width(),
 		d->m_pixmap.height(), d->m_pixmap );
 
 	p.setPen( QPen( Qt::darkGreen, 2 ) );
 
 	p.setBrush( Qt::NoBrush );
 
-	p.drawRect( c_dim / 2 + c_delta, c_dim / 2 + c_delta,
-		sizeHint().width() - c_dim - c_delta * 2,
-		sizeHint().height() - c_dim - c_delta * 2 );
-
-	p.setBrush( Qt::darkGreen );
-
-	p.drawPie( QRect( c_dim + c_delta + 1, c_delta, c_dim, c_dim ),
-		0, 180 * 16 );
+	p.drawRect( 1, 1, sizeHint().width() - 2, sizeHint().height() - 2 );
 }
 
 void

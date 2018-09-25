@@ -41,6 +41,7 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QContextMenuEvent>
+#include <QWheelEvent>
 
 
 //
@@ -51,8 +52,6 @@ class MainWindowPrivate {
 public:
 	explicit MainWindowPrivate( MainWindow * parent )
 		:	m_pressed( false )
-		,	m_overrided( false )
-		,	m_curHandler( HandlerType::Unknown )
 		,	q( parent )
 	{
 	}
@@ -66,33 +65,12 @@ public:
     //! Show menu.
 	void showMenu( const QPoint & pos );
 
-	//! Type of the handler.
-	enum class HandlerType {
-		TopLeft,
-		Control,
-		Top,
-		TopRight,
-		Right,
-		BottomRight,
-		Bottom,
-		BottomLeft,
-		Left,
-		Unknown
-	}; // enum class HandlerType
-
-	//! \return Type of the handler by the pos.
-	HandlerType handlerType( const QPoint & pos );
-
 	//! Position of the mouse cursor.
 	QPoint m_pos;
-	//! Is mouse button pressed?
-	bool m_pressed;
-	//! Is cursor overrided?
-	bool m_overrided;
-	//! Current handler type.
-	HandlerType m_curHandler;
 	//! Move delta.
 	QPoint m_moveDelta;
+	//! Is mouse button pressed?
+	bool m_pressed;
 	//! Parent.
 	MainWindow * q;
 }; // class MainWindowPrivate
@@ -107,8 +85,8 @@ MainWindowPrivate::init()
 	if( const QWindow * window = q->windowHandle() )
 		screen = window->screen();
 
-	const int w = 150;
-	const int h = 150;
+	const int w = c_startSize.width();
+	const int h = c_startSize.height();
 
 	q->resize( w, h );
 
@@ -134,8 +112,8 @@ MainWindowPrivate::capture()
 		screen = window->screen();
 
 	return ( screen ? screen->grabWindow( 0,
-			q->pos().x() + c_windowOffset, q->pos().y() + c_windowOffset,
-			q->width() - c_windowOffset * 2, q->height() - c_windowOffset * 2 ) :
+			q->pos().x() + 2, q->pos().y() + 2,
+			q->width() - 4, q->height() - 4 ) :
 		QPixmap() );
 }
 
@@ -155,34 +133,6 @@ MainWindowPrivate::scale( QPainter & p, const QImage & img, int factor )
 			p.drawRect( i * factor, j * factor, factor, factor );
 		}
 	}
-}
-
-MainWindowPrivate::HandlerType
-MainWindowPrivate::handlerType( const QPoint & pos )
-{
-	const int cw = (qreal) q->width() / 4.0;
-	const int ch = (qreal) q->height() / 4.0;
-
-	if( QRect( 0, 0, c_delta + c_dim, ch ).contains( pos ) )
-		return HandlerType::TopLeft;
-	else if( QRect( q->width() - cw, 0, cw, ch ).contains( pos ) )
-		return HandlerType::TopRight;
-	else if( QRect( 0, q->height() - ch, cw, ch ).contains( pos ) )
-		return HandlerType::BottomLeft;
-	else if( QRect( q->width() - cw, q->height() - ch, cw, ch ).contains( pos ) )
-		return HandlerType::BottomRight;
-	else if( QRect( 0, q->height() / 2 - ch / 2, cw, ch ).contains( pos ) )
-		return HandlerType::Left;
-	else if( QRect( q->width() / 2 - c_dim / 2, 0, c_dim, ch ).contains( pos ) )
-		return HandlerType::Top;
-	else if( QRect( q->width() / 2 - cw / 2, q->height() - ch, cw, ch ).contains( pos ) )
-		return HandlerType::Bottom;
-	else if( QRect( q->width() - cw, q->height() / 2 - ch / 2, cw, ch ).contains( pos ) )
-		return HandlerType::Right;
-	else if( QRect( c_dim + c_delta + 1, 0, c_dim, ch ).contains( pos ) )
-		return HandlerType::Control;
-	else
-		return HandlerType::Unknown;
 }
 
 void
@@ -274,40 +224,7 @@ MainWindow::paintEvent( QPaintEvent * )
 
 	p.setBrush( Qt::NoBrush );
 
-	p.drawRect( c_dim / 2 + c_delta, c_dim / 2 + c_delta,
-		width() - c_dim - c_delta * 2, height() - c_dim - c_delta * 2 );
-
-	p.setBrush( Qt::red );
-
-	p.drawPie( QRect( c_delta, c_delta, c_dim, c_dim ),
-		0, 270 * 16 );
-
-	p.drawPie( QRect( width() - c_dim - c_delta, c_delta, c_dim, c_dim ),
-		180 * 16, -270 * 16 );
-
-	p.drawPie( QRect( c_delta, height() - c_dim - c_delta, c_dim, c_dim ),
-		90 * 16, 270 * 16 );
-
-	p.drawPie( QRect( width() - c_dim - c_delta,
-		height() - c_dim - c_delta, c_dim, c_dim ),
-		90 * 16, -270 * 16 );
-
-	p.drawPie( QRect( c_delta, height() / 2 - c_dim / 2, c_dim, c_dim ),
-		90 * 16, 180 * 16 );
-
-	p.drawPie( QRect( width() / 2 - c_dim / 2, c_delta, c_dim, c_dim ),
-		0, 180 * 16 );
-
-	p.drawPie( QRect( width() / 2 - c_dim / 2, height() - c_dim - c_delta,
-		c_dim, c_dim ),
-		0, -180 * 16 );
-
-	p.drawPie( QRect( width() - c_dim - c_delta, height() / 2 - c_dim / 2,
-		c_dim, c_dim ),
-		90 * 16, -180 * 16 );
-
-	p.drawPie( QRect( c_dim + c_delta + 1, c_delta, c_dim, c_dim ),
-		0, 180 * 16 );
+	p.drawRect( 1, 1, width() - 2, height() - 2 );
 }
 
 void
@@ -320,8 +237,6 @@ MainWindow::mousePressEvent( QMouseEvent * e )
 		d->m_pressed = true;
 
 		d->m_moveDelta = QPoint( 0, 0 );
-
-		d->m_curHandler = d->handlerType( d->m_pos );
 	}
 
 	e->accept();
@@ -334,194 +249,9 @@ MainWindow::mouseMoveEvent( QMouseEvent * e )
 	{
 		const QPoint delta = e->pos() - d->m_pos;
 
-		switch( d->m_curHandler )
-		{
-			case MainWindowPrivate::HandlerType::TopLeft :
-			{
-				const QSize s( size() - QSize( delta.x(), delta.y() ) );
+		d->m_moveDelta += QPoint( qAbs( delta.x() ), qAbs( delta.y() ) );
 
-				if( s.width() > c_minSize.width() ||
-					s.height() > c_minSize.height() )
-				{
-					move( pos() + delta );
-
-					resize( s );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::TopRight :
-			{
-				const QSize s( size() + QSize( delta.x(), -delta.y() ) );
-
-				d->m_pos = QPoint( e->pos().x(), d->m_pos.y() );
-
-				if( s.width() > c_minSize.width() ||
-					s.height() > c_minSize.height() )
-				{
-					move( pos().x(), pos().y() + delta.y() );
-
-					resize( s );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::BottomLeft :
-			{
-				const QSize s( size() + QSize( -delta.x(), delta.y() ) );
-
-				d->m_pos = QPoint( d->m_pos.x(), e->pos().y() );
-
-				if( s.width() > c_minSize.width() ||
-					s.height() > c_minSize.height() )
-				{
-					move( pos().x() + delta.x(), pos().y() );
-
-					resize( s );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::BottomRight :
-			{
-				const QSize s( size() + QSize( delta.x(), delta.y() ) );
-
-				d->m_pos = e->pos();
-
-				if( s.width() > c_minSize.width() ||
-					s.height() > c_minSize.height() )
-				{
-					resize( s );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::Left :
-			{
-				const int w = width() - delta.x();
-
-				if( w > c_minSize.width() )
-				{
-					move( pos().x() + delta.x(), pos().y() );
-
-					resize( w, height() );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::Top :
-			{
-				const int h = height() - delta.y();
-
-				if( h > c_minSize.height() )
-				{
-					move( pos() + QPoint( 0, delta.y() ) );
-
-					resize( width(), h );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::Bottom :
-			{
-				const int h = height() + delta.y();
-
-				d->m_pos = QPoint( d->m_pos.x(), e->pos().y() );
-
-				if( h > c_minSize.height() )
-					resize( width(), h );
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::Right :
-			{
-				const int w = width() + delta.x();
-
-				d->m_pos = QPoint( e->pos().x(), d->m_pos.y() );
-
-				if( w > c_minSize.width() )
-					resize( w, height() );
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::Control :
-			{
-				d->m_moveDelta += QPoint( qAbs( delta.x() ), qAbs( delta.y() ) );
-
-				move( pos() + delta );
-			}
-				break;
-
-			default :
-				break;
-		}
-	}
-	else
-	{
-		switch( d->handlerType( e->pos() ) )
-		{
-			case MainWindowPrivate::HandlerType::BottomRight :
-			case MainWindowPrivate::HandlerType::TopLeft :
-			{
-				if( !d->m_overrided )
-				{
-					d->m_overrided = true;
-
-					QApplication::setOverrideCursor(
-						QCursor( Qt::SizeFDiagCursor ) );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::TopRight :
-			case MainWindowPrivate::HandlerType::BottomLeft :
-			{
-				if( !d->m_overrided )
-				{
-					d->m_overrided = true;
-
-					QApplication::setOverrideCursor(
-						QCursor( Qt::SizeBDiagCursor ) );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::Right :
-			case MainWindowPrivate::HandlerType::Left :
-			{
-				if( !d->m_overrided )
-				{
-					d->m_overrided = true;
-
-					QApplication::setOverrideCursor(
-						QCursor( Qt::SizeHorCursor ) );
-				}
-			}
-				break;
-
-			case MainWindowPrivate::HandlerType::Top :
-			case MainWindowPrivate::HandlerType::Bottom :
-			{
-				if( !d->m_overrided )
-				{
-					d->m_overrided = true;
-
-					QApplication::setOverrideCursor(
-						QCursor( Qt::SizeVerCursor ) );
-				}
-			}
-				break;
-
-			default :
-			{
-				if( d->m_overrided )
-				{
-					d->m_overrided = false;
-
-					QApplication::restoreOverrideCursor();
-				}
-			}
-		}
+		move( pos() + delta );
 	}
 
 	e->accept();
@@ -532,37 +262,81 @@ MainWindow::mouseReleaseEvent( QMouseEvent * e )
 {
 	if( d->m_pressed )
 	{
-		if( d->m_curHandler == MainWindowPrivate::HandlerType::Control &&
-			d->m_moveDelta.manhattanLength() <= 3 )
-		{
+		if( d->m_moveDelta.manhattanLength() <= 3 )
 			d->showMenu( e->globalPos() );
-		}
 
 		d->m_pressed = false;
 	}
 
-	d->m_curHandler = MainWindowPrivate::HandlerType::Unknown;
-
 	e->accept();
-}
-
-void
-MainWindow::leaveEvent( QEvent * event )
-{
-	if( d->m_overrided )
-	{
-		d->m_overrided = false;
-
-		QApplication::restoreOverrideCursor();
-	}
-
-	event->accept();
 }
 
 void
 MainWindow::contextMenuEvent( QContextMenuEvent * e )
 {
 	d->showMenu( e->globalPos() );
+
+	e->accept();
+}
+
+void
+MainWindow::wheelEvent( QWheelEvent * e )
+{
+	const bool up = e->angleDelta().y() > 0;
+
+	QScreen * screen = QApplication::primaryScreen();
+
+	if( const QWindow * window = windowHandle() )
+		screen = window->screen();
+
+	const int maxWidth = screen->availableSize().width();
+	const int maxHeight = screen->availableSize().height();
+	const int minWidth = c_minSize.width();
+	const int minHeight = c_minSize.height();
+
+	if( up )
+	{
+		QPoint p = pos();
+
+		if( p.x() > 0 && !( e->modifiers() & Qt::ShiftModifier ) )
+			p.setX( p.x() - 1 );
+
+		if( p.y() > 0 && !( e->modifiers() & Qt::ControlModifier ) )
+			p.setY( p.y() - 1 );
+
+		move( p );
+
+		QSize s = size();
+
+		if( s.width() < maxWidth && !( e->modifiers() & Qt::ShiftModifier )  )
+			s.setWidth( s.width() + 2 );
+
+		if( s.height() < maxHeight && !( e->modifiers() & Qt::ControlModifier ) )
+			s.setHeight( s.height() + 2 );
+
+		resize( s );
+	}
+	else
+	{
+		QPoint p = pos();
+
+		QSize s = size();
+
+		if( s.width() > minWidth && !( e->modifiers() & Qt::ShiftModifier ) )
+		{
+			p.setX( p.x() + 1 );
+			s.setWidth( s.width() - 2 );
+		}
+
+		if( s.height() > minHeight && !( e->modifiers() & Qt::ControlModifier ) )
+		{
+			p.setY( p.y() + 1 );
+			s.setHeight( s.height() - 2 );
+		}
+
+		move( p );
+		resize( s );
+	}
 
 	e->accept();
 }
@@ -586,7 +360,7 @@ MainWindow::x2()
 
 	ZoomWindow * w = new ZoomWindow( pixmap );
 
-	w->move( pos() - QPoint( c_dim, c_dim ) );
+	w->move( pos() );
 
 	w->show();
 }
@@ -610,7 +384,7 @@ MainWindow::x3()
 
 	ZoomWindow * w = new ZoomWindow( pixmap );
 
-	w->move( pos() - QPoint( c_dim, c_dim ) );
+	w->move( pos() );
 
 	w->show();
 }
@@ -634,7 +408,7 @@ MainWindow::x5()
 
 	ZoomWindow * w = new ZoomWindow( pixmap );
 
-	w->move( pos() - QPoint( c_dim, c_dim ) );
+	w->move( pos() );
 
 	w->show();
 }
