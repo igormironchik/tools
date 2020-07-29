@@ -365,14 +365,14 @@ void CheckableProxyModel::removeSubtree(QModelIndex sourceIndex)
     //removes items from the data hash that are decendant of sourceIndex, but not sourceIndex itself
     int rowCount = sourceModel()->rowCount(sourceIndex);
     for (int i(0); i<rowCount; ++i) {
-        QPersistentModelIndex pIndex(sourceIndex.child(i, 0));
+        QPersistentModelIndex pIndex(index(i, 0, sourceIndex));
         if (m_checkStates.contains(pIndex))
-            removeSubtree(sourceIndex.child(i, 0));
+            removeSubtree(index(i, 0, sourceIndex));
         m_checkStates.remove(pIndex);
     }
 
     if (rowCount > 0)
-        emit dataChanged(sourceIndex.child(0,0), sourceIndex.child(rowCount-1,0));
+        emit dataChanged(index(0, 0, sourceIndex), index(rowCount-1, 0, sourceIndex));
 }
 
 void CheckableProxyModel::cleanupStorage()
@@ -590,10 +590,10 @@ CheckableProxyModelState *CheckableProxyModel::checkedState()
 
     CheckableProxyModelState *result = new CheckableProxyModelState(this);
 
-    result->m_checkedBranchNodes = checkedBNodes.toList();
-    result->m_checkedLeafNodes = checkedLNodes.toList();
-    result->m_uncheckedBranchNodes = uncheckedBNodes.toList();
-    result->m_uncheckedLeafNodes = uncheckedLNodes.toList();
+    result->m_checkedBranchNodes = checkedBNodes.values();
+    result->m_checkedLeafNodes = checkedLNodes.values();
+    result->m_uncheckedBranchNodes = uncheckedBNodes.values();
+    result->m_uncheckedLeafNodes = uncheckedLNodes.values();
 
     return result;
 }
