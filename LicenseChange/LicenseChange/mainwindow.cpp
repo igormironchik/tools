@@ -119,7 +119,7 @@ private:
 		m_oldLicense->setPlaceholderText( tr( "Put old license here. "
 			"You can use special commands \"skip line\" and \"skip word\" "
 			"here, to insert them use tool bar." ) );
-		m_oldLicense->setTabStopWidth( 40 );
+		m_oldLicense->setTabStopDistance( 40 );
 
 		vb2->addWidget( m_oldLicense );
 
@@ -129,7 +129,7 @@ private:
 
 		m_newLicense = new TextEdit( w2 );
 		m_newLicense->setPlaceholderText( tr( "Put new license here." ) );
-		m_newLicense->setTabStopWidth( 40 );
+		m_newLicense->setTabStopDistance( 40 );
 
 		vb2->addWidget( m_newLicense );
 
@@ -386,7 +386,7 @@ MainWindow::checkedFiles()
 		ubpath.append( d->m_centralWidget->m_model->filePath( i ) );
 
 	const QStringList filter = d->m_centralWidget->m_filter->text()
-		.split( QLatin1Char( ' ' ), QString::SkipEmptyParts );
+		.split( QLatin1Char( ' ' ), Qt::SkipEmptyParts );
 
 	QStringList res;
 
@@ -465,7 +465,7 @@ void
 MainWindow::nameFiltersChanged( const QString & filter )
 {
 	const QStringList names = filter.split( QLatin1Char( ' ' ),
-		QString::SkipEmptyParts );
+		Qt::SkipEmptyParts );
 
 	d->m_centralWidget->m_model->setNameFilters( names );
 }

@@ -37,7 +37,7 @@
 TextEdit::TextEdit( QWidget * parent )
 	:	QTextEdit( parent )
 {
-	setTabStopWidth( 40 );
+	setTabStopDistance( 40 );
 }
 
 TextEdit::~TextEdit()

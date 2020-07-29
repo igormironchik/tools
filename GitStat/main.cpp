@@ -153,7 +153,7 @@ int main( int argc, char ** argv )
 									<< QLatin1String( " added " )
 									<< ins
 									<< QLatin1String( " deleted " )
-									<< del << endl;
+									<< del << Qt::endl;
 
 								totalAdded += ins;
 								totalDeleted += del;
@@ -214,21 +214,21 @@ int main( int argc, char ** argv )
 			<< QLatin1String( " added " )
 			<< ins
 			<< QLatin1String( " deleted " )
-			<< del << endl;
+			<< del << Qt::endl;
 
 		totalAdded += ins;
 		totalDeleted += del;
 		++totalDays;
 	}
 
-	outStream << QLatin1String( "----------" ) << endl
-		<< QLatin1String( "Total:" ) << endl
-		<< QLatin1String( "----------" ) << endl
+	outStream << QLatin1String( "----------" ) << Qt::endl
+		<< QLatin1String( "Total:" ) << Qt::endl
+		<< QLatin1String( "----------" ) << Qt::endl
 		<< QLatin1String( "Added " ) << totalAdded
-		<< QLatin1String( " line(s)" ) << endl
+		<< QLatin1String( " line(s)" ) << Qt::endl
 		<< QLatin1String( "Deleted " ) << totalDeleted
-		<< QLatin1String( " line(s)" ) << endl
-		<< totalDays <<  QLatin1String( " day(s)" ) << endl;
+		<< QLatin1String( " line(s)" ) << Qt::endl
+		<< totalDays <<  QLatin1String( " day(s)" ) << Qt::endl;
 
 	return 0;
 }
