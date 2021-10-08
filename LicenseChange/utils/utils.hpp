@@ -96,9 +96,9 @@ struct WordWithPlace Q_DECL_FINAL {
 	//! Statement.
 	Statement m_st;
 	//! Postion of the word.
-	int m_pos;
+	qsizetype m_pos;
 	//! Poistion of the word with previous spaces.
-	int m_posWithSpaces;
+	qsizetype m_posWithSpaces;
 }; // struct WordWithPlace
 
 using Words = QList< WordWithPlace >;
@@ -120,9 +120,9 @@ Words splitData( const QString & data, bool toLower = false );
 
 struct LicensePos Q_DECL_FINAL {
 	//! Start.
-	int m_start;
+	qsizetype m_start;
 	//! End.
-	int m_end;
+	qsizetype m_end;
 }; // struct LicensePos
 
 
