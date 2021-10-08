@@ -203,8 +203,12 @@ MainWindow::help()
 {
 	QMessageBox dlg( this );
 
+	dlg.setWindowTitle( tr( "Help of Magnifier" ) );
 	dlg.setText( tr( "Select a region to magnify. "
-		"Launch menu and select zoom action you need." ) );
+		"Launch menu and select zoom action you need.\n"
+		"You can use scrolling to resize region.\n"
+		"Use scrolling with Shift and Control "
+		"to resize in one direction." ) );
 
 	dlg.exec();
 }
