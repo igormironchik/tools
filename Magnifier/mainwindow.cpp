@@ -63,7 +63,7 @@ public:
 	//! Scale.
 	void scale( QPainter & p, const QImage & img, int factor );
     //! Show menu.
-	void showMenu( const QPoint & pos );
+	void showMenu( const QPointF & pos );
 
 	//! Position of the mouse cursor.
 	QPoint m_pos;
@@ -136,7 +136,7 @@ MainWindowPrivate::scale( QPainter & p, const QImage & img, int factor )
 }
 
 void
-MainWindowPrivate::showMenu( const QPoint & pos )
+MainWindowPrivate::showMenu( const QPointF & pos )
 {
 	QMenu menu( q );
 
@@ -167,7 +167,7 @@ MainWindowPrivate::showMenu( const QPoint & pos )
 		MainWindow::tr( "Quit" ), QApplication::instance(),
 		&QApplication::quit );
 
-	menu.exec( pos );
+	menu.exec( pos.toPoint() );
 }
 
 
@@ -263,7 +263,7 @@ MainWindow::mouseReleaseEvent( QMouseEvent * e )
 	if( d->m_pressed )
 	{
 		if( d->m_moveDelta.manhattanLength() <= 3 )
-			d->showMenu( e->globalPos() );
+			d->showMenu( e->globalPosition() );
 
 		d->m_pressed = false;
 	}
