@@ -54,7 +54,7 @@ public:
 	void init();
 
 	//! Show context menu.
-	void showMenu( const QPoint & pos );
+	void showMenu( const QPointF & pos );
 
 	//! Pixmap.
 	QPixmap m_pixmap;
@@ -79,7 +79,7 @@ ZoomWindowPrivate::init()
 }
 
 void
-ZoomWindowPrivate::showMenu( const QPoint & pos )
+ZoomWindowPrivate::showMenu( const QPointF & pos )
 {
 	QMenu menu( q );
 
@@ -102,7 +102,7 @@ ZoomWindowPrivate::showMenu( const QPoint & pos )
 		ZoomWindow::tr( "Quit" ), QApplication::instance(),
 		&QApplication::quit );
 
-	menu.exec( pos );
+	menu.exec( pos.toPoint() );
 }
 
 
@@ -182,7 +182,7 @@ ZoomWindow::mouseReleaseEvent( QMouseEvent * e )
 	if( d->m_pressed )
 	{
 		if( d->m_moveDelta.manhattanLength() <= 3 )
-			d->showMenu( e->globalPos() );
+			d->showMenu( e->globalPosition() );
 
 		d->m_pressed = false;
 	}

@@ -42,7 +42,7 @@
 #include <QTextDocument>
 #include <QDir>
 #include <QFileInfo>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QStatusBar>
@@ -394,13 +394,11 @@ MainWindow::checkedFiles()
 		checkedFiles( d->m_centralWidget->m_model->filePath( i ),
 			res, bindexes, lindexes, ubpath, ulidx, filter );
 
-	QList< QRegExp > regexp;
+	QList< QRegularExpression > regexp;
 
 	foreach( const QString & f, filter )
 	{
-		QRegExp r;
-		r.setPatternSyntax( QRegExp::Wildcard );
-		r.setPattern( f );
+		QRegularExpression r = QRegularExpression::fromWildcard( f );
 
 		regexp.append( r );
 	}
@@ -410,9 +408,11 @@ MainWindow::checkedFiles()
 		const QString file = d->m_centralWidget->m_model->filePath( i );
 		const QFileInfo info( file );
 
-		foreach( const QRegExp & r, regexp )
+		foreach( const auto & r, regexp )
 		{
-			if( r.exactMatch( info.fileName() ) )
+			const auto match = r.match( info.fileName() );
+
+			if( match.hasMatch() )
 				res.append( file );
 		}
 	}

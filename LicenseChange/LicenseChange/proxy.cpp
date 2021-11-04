@@ -85,7 +85,7 @@ Qt::ItemFlags CheckableProxyModel::flags(const QModelIndex &index) const
     if (index.column() == 0) {
         flags |= Qt::ItemIsUserCheckable;
         if (sourceIndex.model()->hasChildren(sourceIndex)) {
-            flags |= Qt::ItemIsTristate;
+			flags |= Qt::ItemIsAutoTristate;
         }
     }
 

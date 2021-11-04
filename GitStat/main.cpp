@@ -23,12 +23,12 @@
 // Qt include.
 #include <QCoreApplication>
 #include <QTextStream>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QDebug>
 #include <QProcess>
 
 // Args include.
-#include <Args/all.hpp>
+#include <args-parser/all.hpp>
 
 
 int main( int argc, char ** argv )
@@ -98,18 +98,18 @@ int main( int argc, char ** argv )
 
 	QTextStream outStream( stdout );
 
-	QList< QRegExp > author;
+	QList< QRegularExpression > author;
 
 	foreach( const QString & a, authorName )
-		author.append( QRegExp( QString( "^Author: " ) +
+		author.append( QRegularExpression( QString( "^Author: " ) +
 			a + QLatin1String( ".*$" ) ) );
 
-	const QRegExp date(
+	const QRegularExpression date(
 		QLatin1String( "^Date:\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)"
 					   "\\s+\\d+:\\d+:\\d+\\s+(\\d+).*$" ) );
-	const QRegExp insReg(
+	const QRegularExpression insReg(
 		QLatin1String( "^.*(\\d+) insertion.*$" ) );
-	const QRegExp delReg(
+	const QRegularExpression delReg(
 		QLatin1String( "^.*(\\d+) deletion.*$" ) );
 
 	QStringList lines = data.split( QLatin1Char( '\n' ) );
@@ -129,19 +129,24 @@ int main( int argc, char ** argv )
 	{
 		QString line = lines.takeFirst();
 
-		foreach( const QRegExp & r, author )
-			if( r.exactMatch( line ) )
+		foreach( const auto & r, author )
+		{
+			const auto match = r.match( line );
+
+			if( match.hasMatch() )
 			{
 				if( !lines.isEmpty() )
 				{
 					line = lines.takeFirst();
 
-					if( date.indexIn( line ) != -1 )
+					const auto dateMatch = date.match( line );
+
+					if( dateMatch.hasMatch() )
 					{
-						const QString tmpWeekDay = date.cap( 1 );
-						const QString mTmp = date.cap( 2 );
-						const int tmp = date.cap( 3 ).toInt();
-						const int yTmp = date.cap( 4 ).toInt();
+						const QString tmpWeekDay = dateMatch.captured( 1 );
+						const QString mTmp = dateMatch.captured( 2 );
+						const int tmp = dateMatch.captured( 3 ).toInt();
+						const int yTmp = dateMatch.captured( 4 ).toInt();
 
 						if( d )
 						{
@@ -182,16 +187,20 @@ int main( int argc, char ** argv )
 
 							bool matched = false;
 
-							if( insReg.indexIn( line ) != -1 )
+							const auto insMatch = insReg.match( line );
+
+							if( insMatch.hasMatch() )
 							{
-								ins += insReg.cap( 1 ).toInt();
+								ins += insMatch.captured( 1 ).toInt();
 
 								matched = true;
 							}
 
-							if( delReg.indexIn( line ) != -1 )
+							const auto delMatch = delReg.match( line );
+
+							if( delMatch.hasMatch() )
 							{
-								del += delReg.cap( 1 ).toInt();
+								del += delMatch.captured( 1 ).toInt();
 
 								matched = true;
 							}
@@ -204,6 +213,7 @@ int main( int argc, char ** argv )
 						break;
 				}
 			}
+		}
 	}
 
 	if( d )
