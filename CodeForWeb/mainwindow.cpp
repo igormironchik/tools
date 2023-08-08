@@ -96,7 +96,7 @@ MainWindowPrivate::init()
 
 	q->menuBar()->addMenu( MainWindow::tr( "&File" ) )->addAction(
 		QIcon( ":/img/application-exit.png" ), MainWindow::tr( "Quit" ),
-			qApp, SLOT( quit() ), MainWindow::tr( "Ctrl+Q" ) );
+			MainWindow::tr( "Ctrl+Q" ), qApp, &QApplication::quit );
 }
 
 
