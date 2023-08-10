@@ -74,8 +74,6 @@ ZoomWindowPrivate::init()
 	q->setAutoFillBackground( false );
 
 	q->resize( q->sizeHint() );
-
-	q->setAttribute( Qt::WA_TranslucentBackground );
 }
 
 void
@@ -111,9 +109,7 @@ ZoomWindowPrivate::showMenu( const QPointF & pos )
 //
 
 ZoomWindow::ZoomWindow( const QPixmap & p, QWidget * parent )
-	:	QWidget( parent,
-			Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint |
-			Qt::WindowStaysOnTopHint )
+	:	QWidget( parent, Qt::WindowStaysOnTopHint )
 	,	d( new ZoomWindowPrivate( p, this ) )
 {
 	d->init();
@@ -126,7 +122,7 @@ ZoomWindow::~ZoomWindow()
 QSize
 ZoomWindow::sizeHint() const
 {
-	return QSize( d->m_pixmap.width() + 4, d->m_pixmap.height() + 4 );
+	return QSize( d->m_pixmap.width(), d->m_pixmap.height() );
 }
 
 void
@@ -136,14 +132,8 @@ ZoomWindow::paintEvent( QPaintEvent * )
 
 	p.setClipRect( QRect( 0, 0, sizeHint().width(), sizeHint().height() ) );
 
-	p.drawPixmap( 2, 2, d->m_pixmap.width(),
+	p.drawPixmap( 0, 0, d->m_pixmap.width(),
 		d->m_pixmap.height(), d->m_pixmap );
-
-	p.setPen( QPen( Qt::darkGreen, 2 ) );
-
-	p.setBrush( Qt::NoBrush );
-
-	p.drawRect( 1, 1, sizeHint().width() - 2, sizeHint().height() - 2 );
 }
 
 void
