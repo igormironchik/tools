@@ -33,8 +33,49 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QFileDialog>
+#include <QMenuBar>
+#include <QWidget>
 
-#include <QDebug>
+
+//
+// Magnified
+//
+
+class Magnified final
+	:	public QWidget
+{
+public:
+	Magnified( const QPixmap & p, QWidget * parent )
+		:	QWidget( parent )
+		,	m_p( p )
+	{
+		setAutoFillBackground( false );
+		setMinimumSize( p.size() );
+	}
+
+	QSize sizeHint() const override
+	{
+		return m_p.size();
+	}
+
+	const QPixmap & pixmap() const
+	{
+		return m_p;
+	}
+
+protected:
+	void paintEvent( QPaintEvent * e ) override
+	{
+		QPainter p( this );
+
+		p.drawPixmap( ( width() - m_p.width() ) / 2,
+			( height() - m_p.height() ) / 2,
+			m_p.width(), m_p.height(), m_p );
+	}
+
+private:
+	QPixmap m_p;
+}; // class Magnified
 
 
 //
@@ -44,63 +85,36 @@
 class ZoomWindowPrivate {
 public:
 	ZoomWindowPrivate( const QPixmap & p, ZoomWindow * parent )
-		:	m_pixmap( p )
-		,	m_pressed( false )
-		,	q( parent )
+		:	q( parent )
 	{
 	}
 
 	//! Init.
-	void init();
+	void init( const QPixmap & p );
 
-	//! Show context menu.
-	void showMenu( const QPointF & pos );
-
-	//! Pixmap.
-	QPixmap m_pixmap;
-	//! Position of the mouse cursor.
-	QPoint m_pos;
-	//! Move delta.
-	QPoint m_moveDelta;
-	//! Is mouse button pressed?
-	bool m_pressed;
+	//! Central widget.
+	Magnified * m_c = nullptr;
 	//! Parent.
 	ZoomWindow * q;
 }; // class ZoomWindowPrivate
 
 void
-ZoomWindowPrivate::init()
+ZoomWindowPrivate::init( const QPixmap & p )
 {
-	q->setAutoFillBackground( false );
+	auto file = q->menuBar()->addMenu( ZoomWindow::tr( "&File" ) );
 
-	q->resize( q->sizeHint() );
-}
-
-void
-ZoomWindowPrivate::showMenu( const QPointF & pos )
-{
-	QMenu menu( q );
-
-	menu.addAction( QIcon( ":/img/document-save.png" ),
+	file->addAction( QIcon( ":/img/document-save.png" ),
 		ZoomWindow::tr( "Save As" ), q, &ZoomWindow::save );
-
-	menu.addAction( QIcon( ":/img/edit-copy.png" ),
+	file->addAction( QIcon( ":/img/edit-copy.png" ),
 		ZoomWindow::tr( "Copy to Clipboard" ), q,
 		&ZoomWindow::copy );
-
-	menu.addSeparator();
-
-	menu.addAction( QIcon( ":/img/dialog-close.png" ),
-		ZoomWindow::tr( "Close Window" ), q, &QWidget::close );
-
-	menu.addSeparator();
-
-	menu.addAction(
-		QIcon( ":/img/application-exit.png" ),
+	file->addSeparator();
+	file->addAction( QIcon( ":/img/application-exit.png" ),
 		ZoomWindow::tr( "Quit" ), QApplication::instance(),
 		&QApplication::quit );
 
-	menu.exec( pos.toPoint() );
+	m_c = new Magnified( p, q );
+	q->setCentralWidget( m_c );
 }
 
 
@@ -109,89 +123,20 @@ ZoomWindowPrivate::showMenu( const QPointF & pos )
 //
 
 ZoomWindow::ZoomWindow( const QPixmap & p, QWidget * parent )
-	:	QWidget( parent, Qt::WindowStaysOnTopHint )
+	:	QMainWindow( parent, Qt::WindowStaysOnTopHint )
 	,	d( new ZoomWindowPrivate( p, this ) )
 {
-	d->init();
+	d->init( p );
 }
 
 ZoomWindow::~ZoomWindow()
 {
 }
 
-QSize
-ZoomWindow::sizeHint() const
-{
-	return QSize( d->m_pixmap.width(), d->m_pixmap.height() );
-}
-
-void
-ZoomWindow::paintEvent( QPaintEvent * )
-{
-	QPainter p( this );
-
-	p.setClipRect( QRect( 0, 0, sizeHint().width(), sizeHint().height() ) );
-
-	p.drawPixmap( 0, 0, d->m_pixmap.width(),
-		d->m_pixmap.height(), d->m_pixmap );
-}
-
-void
-ZoomWindow::mousePressEvent( QMouseEvent * e )
-{
-	if( e->button() == Qt::LeftButton )
-	{
-		d->m_pos = e->pos();
-
-		d->m_pressed = true;
-
-		d->m_moveDelta = QPoint( 0, 0 );
-	}
-
-	e->accept();
-}
-
-void
-ZoomWindow::mouseMoveEvent( QMouseEvent * e )
-{
-	if( d->m_pressed )
-	{
-		const QPoint delta = e->pos() - d->m_pos;
-
-		d->m_moveDelta += QPoint( qAbs( delta.x() ), qAbs( delta.y() ) );
-
-		move( pos() + delta );
-	}
-
-	e->accept();
-}
-
-void
-ZoomWindow::mouseReleaseEvent( QMouseEvent * e )
-{
-	if( d->m_pressed )
-	{
-		if( d->m_moveDelta.manhattanLength() <= 3 )
-			d->showMenu( e->globalPosition() );
-
-		d->m_pressed = false;
-	}
-
-	e->accept();
-}
-
 void
 ZoomWindow::closeEvent( QCloseEvent * e )
 {
 	deleteLater();
-
-	e->accept();
-}
-
-void
-ZoomWindow::contextMenuEvent( QContextMenuEvent * e )
-{
-	d->showMenu( e->globalPos() );
 
 	e->accept();
 }
@@ -208,12 +153,12 @@ ZoomWindow::save()
 		if( !fileName.endsWith( QLatin1String( ".png" ), Qt::CaseInsensitive ) )
 			fileName.append( QLatin1String( ".png" ) );
 
-		d->m_pixmap.save( fileName );
+		d->m_c->pixmap().save( fileName );
 	}
 }
 
 void
 ZoomWindow::copy()
 {
-	QApplication::clipboard()->setPixmap( d->m_pixmap );
+	QApplication::clipboard()->setPixmap( d->m_c->pixmap() );
 }

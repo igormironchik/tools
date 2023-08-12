@@ -24,7 +24,7 @@
 #define MAGNIFIER__ZOOMWINDOW_HPP__INCLUDED
 
 // Qt include.
-#include <QWidget>
+#include <QMainWindow>
 #include <QScopedPointer>
 
 
@@ -36,15 +36,13 @@ class ZoomWindowPrivate;
 
 //! Main window.
 class ZoomWindow Q_DECL_FINAL
-	:	public QWidget
+	:	public QMainWindow
 {
 	Q_OBJECT
 
 public:
 	ZoomWindow( const QPixmap & p, QWidget * parent = Q_NULLPTR );
 	~ZoomWindow();
-
-	QSize sizeHint() const Q_DECL_OVERRIDE;
 
 private slots:
 	//! Save.
@@ -53,12 +51,7 @@ private slots:
 	void copy();
 
 protected:
-	void paintEvent( QPaintEvent * ) Q_DECL_OVERRIDE;
-	void mousePressEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
-	void mouseMoveEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
-	void mouseReleaseEvent( QMouseEvent * e ) Q_DECL_OVERRIDE;
-	void closeEvent( QCloseEvent * e ) Q_DECL_OVERRIDE;
-	void contextMenuEvent( QContextMenuEvent * e ) Q_DECL_OVERRIDE;
+	void closeEvent( QCloseEvent * e ) override;
 
 private:
 	friend class ZoomWindowPrivate;
