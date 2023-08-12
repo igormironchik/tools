@@ -22,7 +22,6 @@
 
 // Magnifier include.
 #include "zoomwindow.hpp"
-#include "constants.hpp"
 
 // Qt include.
 #include <QApplication>
@@ -31,10 +30,10 @@
 #include <QPixmap>
 #include <QClipboard>
 #include <QPainter>
-#include <QMouseEvent>
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QWidget>
+#include <QCloseEvent>
 
 
 //

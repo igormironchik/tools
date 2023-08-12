@@ -35,14 +35,14 @@
 class ZoomWindowPrivate;
 
 //! Main window.
-class ZoomWindow Q_DECL_FINAL
+class ZoomWindow final
 	:	public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	ZoomWindow( const QPixmap & p, QWidget * parent = Q_NULLPTR );
-	~ZoomWindow();
+	ZoomWindow( const QPixmap & p, QWidget * parent = nullptr );
+	~ZoomWindow() override;
 
 private slots:
 	//! Save.
