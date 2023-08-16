@@ -11,7 +11,7 @@ your code, select and copy. And in the clipboard code will be prepared for HTML.
             
 GitStat is console app to calculate stat in the Git repo.
             
-```
+```txt
 GitStat -a "Igor Mironchik" -a igor.mironchik@gmail.com
 ...
 Sun Nov 13 2012 added 992 deleted 92
