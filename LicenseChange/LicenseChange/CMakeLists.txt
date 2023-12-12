@@ -30,10 +30,11 @@ if( WIN32 )
 	list( APPEND SRC app.rc )
 endif()
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../utils )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../utils
+	${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/widgets/include )
 
 add_executable( LicenseChange ${SRC} )
 
 add_dependencies( LicenseChange utils )
 
-target_link_libraries( LicenseChange utils Qt6::Widgets Qt6::Gui Qt6::Core )
+target_link_libraries( LicenseChange utils widgets Qt6::Widgets Qt6::Gui Qt6::Core )

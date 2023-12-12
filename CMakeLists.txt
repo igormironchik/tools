@@ -15,6 +15,9 @@ project( tools )
 
 enable_testing()
 
+set( BUILD_WIDGETS_EXAMPLES OFF CACHE INTERNAL "" FORCE )
+add_subdirectory( 3rdparty/widgets )
+
 add_subdirectory( CodeForWeb )
 add_subdirectory( GitStat )
 add_subdirectory( LicenseChange )

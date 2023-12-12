@@ -27,6 +27,9 @@
 #include "worker.hpp"
 #include "opts_dialog.hpp"
 
+// Widgets include.
+#include <Widgets/InfoDialog>
+
 // Qt include.
 #include <QApplication>
 #include <QMenuBar>
@@ -519,11 +522,10 @@ MainWindow::jobDone( int found, int total,
 		details.append( QLatin1Char( '\n' ) );
 	}
 
-	QMessageBox info( QMessageBox::Information, tr( "Job done..." ),
-		tr( "Replaced license in %1 files. Total files processed: %2." )
+	InfoDialog info( tr( "Job done..." ),
+		tr( "Replaced license in %1 files.\nTotal files processed: %2." )
 			.arg( QString::number( found ) ).arg( QString::number( total ) ),
-		QMessageBox::Ok, this );
-	info.setDetailedText( details );
+		details, this );
 
 	statusBar()->showMessage( tr( "Job done." ), 3000 );
 
