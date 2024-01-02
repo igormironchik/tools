@@ -16,6 +16,13 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+	02.01.2024 - removeSubtree() is modified by Igor Mironchik (igor.mironchik at gmail dot com).
+
+	06.10.2021 - flags() is changed by Igor Mironchik (igor.mironchik at gmail dot com)
+
+	29.07.2020 - removeSubtree(), checkedState() are changed by
+				 Igor Mironchik (igor.mironchik at gmail dot com)
 */
 #include "proxy.hpp"
 #include <QtDebug>
@@ -365,14 +372,15 @@ void CheckableProxyModel::removeSubtree(QModelIndex sourceIndex)
     //removes items from the data hash that are decendant of sourceIndex, but not sourceIndex itself
     int rowCount = sourceModel()->rowCount(sourceIndex);
     for (int i(0); i<rowCount; ++i) {
-        QPersistentModelIndex pIndex(index(i, 0, sourceIndex));
+        QPersistentModelIndex pIndex(sourceModel()->index(i, 0, sourceIndex));
         if (m_checkStates.contains(pIndex))
-            removeSubtree(index(i, 0, sourceIndex));
+            removeSubtree(sourceModel()->index(i, 0, sourceIndex));
         m_checkStates.remove(pIndex);
     }
 
     if (rowCount > 0)
-        emit dataChanged(index(0, 0, sourceIndex), index(rowCount-1, 0, sourceIndex));
+        emit dataChanged(index(0, 0, mapFromSource(sourceIndex)),
+			index(rowCount-1, 0, mapFromSource(sourceIndex)));
 }
 
 void CheckableProxyModel::cleanupStorage()
