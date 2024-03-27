@@ -1,16 +1,16 @@
 # About
 
 Tools is a project for different useful to developers tools.
-            
+
 ## CodeForWeb
 
 CodeForWeb is a GUI application that prepare text to pasting to HTML. Just paste 
 your code, select and copy. And in the clipboard code will be prepared for HTML.
-            
+
 ## GitStat
-            
+
 GitStat is console app to calculate stat in the Git repo.
-            
+
 ```txt
 GitStat -a "Igor Mironchik" -a igor.mironchik@gmail.com
 ...
@@ -26,7 +26,7 @@ Deleted 48927 line(s)
 ```
 
 ## LicenseChange
-			
+
 LicenseChange is a GUI application that find license in text files and changes it to the
 new one.
             
