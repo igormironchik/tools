@@ -22,7 +22,10 @@ set( SRC main.cpp
     proxy.hpp
     textedit.hpp
     worker.hpp
-    opts_dialog.ui )
+    opts_dialog.ui
+	info_dialog.hpp
+	info_dialog.cpp
+	info_dialog.ui )
 
 qt6_add_resources( SRC resources.qrc )
 
@@ -30,11 +33,10 @@ if( WIN32 )
 	list( APPEND SRC app.rc )
 endif()
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../utils
-	${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/widgets/include )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../utils )
 
 add_executable( LicenseChange ${SRC} )
 
 add_dependencies( LicenseChange utils )
 
-target_link_libraries( LicenseChange utils widgets Qt6::Widgets Qt6::Gui Qt6::Core )
+target_link_libraries( LicenseChange utils Qt6::Widgets Qt6::Gui Qt6::Core )

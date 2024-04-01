@@ -26,9 +26,7 @@
 #include "proxy.hpp"
 #include "worker.hpp"
 #include "opts_dialog.hpp"
-
-// Widgets include.
-#include <Widgets/InfoDialog>
+#include "info_dialog.hpp"
 
 // Qt include.
 #include <QApplication>
@@ -51,6 +49,8 @@
 #include <QStatusBar>
 #include <QToolButton>
 #include <QWidget>
+#include <QHeaderView>
+#include <QShowEvent>
 
 
 //
@@ -60,6 +60,8 @@
 class CentralWidget
 	:	public QWidget
 {
+	Q_OBJECT
+	
 public:
 	explicit CentralWidget( QWidget * parent = Q_NULLPTR )
 		:	QWidget( parent )
@@ -76,7 +78,13 @@ public:
 	~CentralWidget()
 	{
 	}
-
+	
+private slots:
+	void onCollapsedExpanded( const QModelIndex & )
+	{
+		m_view->header()->resizeSections( QHeaderView::ResizeToContents );
+	}
+	
 private:
 	//! Init.
 	void init()
@@ -106,6 +114,10 @@ private:
 		m_proxy->setSourceModel( m_model );
 
 		m_view->setModel( m_proxy );
+		m_view->header()->resizeSections( QHeaderView::ResizeToContents );
+		
+		connect( m_view, &QTreeView::collapsed, this, &CentralWidget::onCollapsedExpanded );
+		connect( m_view, &QTreeView::expanded, this, &CentralWidget::onCollapsedExpanded );
 
 		l->addWidget( w1 );
 
@@ -158,6 +170,8 @@ public:
 	CheckableProxyModel * m_proxy;
 	//! Files model.
 	QFileSystemModel * m_model;
+	//! First show event.
+	bool m_firstShowEvent = true;
 }; // class CentralWidget
 
 
@@ -564,3 +578,5 @@ MainWindow::cancelJob()
 	if( d->m_worker )
 		d->m_worker->stopJob();
 }
+
+#include "mainwindow.moc"
