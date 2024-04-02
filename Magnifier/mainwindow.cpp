@@ -57,6 +57,10 @@ ResizeHandle::ResizeHandle( Orientation o, bool withMove, QWidget * parent, Main
 {
 	setFrameStyle( QFrame::StyledPanel | QFrame::Sunken );
 	setAutoFillBackground( true );
+	
+	auto p = palette();
+	p.setColor( QPalette::Window, p.color( QPalette::Dark ) );
+	setPalette( p );
 
 	switch( o )
 	{
@@ -213,6 +217,10 @@ TitleWidget::TitleWidget( QWidget * parent, MainWindow * obj )
 	setFrameStyle( QFrame::StyledPanel | QFrame::Sunken );
 	setAutoFillBackground( true );
 	setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
+	
+	auto p = palette();
+	p.setColor( QPalette::Window, p.color( QPalette::Dark ) );
+	setPalette( p );
 }
 
 void
