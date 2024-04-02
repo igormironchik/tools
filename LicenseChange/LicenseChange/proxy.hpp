@@ -1,4 +1,8 @@
 /*
+	SPDX-FileCopyrightText: 2011  Andre Somers <andre@familiesomers.nl>
+	SPDX-License-Identifier: GPL-3.0-or-later
+*/
+/*
     CheckableProxyModel: a Qt proxy model to add a checkbox to column 0
         of each row of any QAbstractItemModel
 

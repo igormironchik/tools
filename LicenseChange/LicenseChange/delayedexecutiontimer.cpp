@@ -1,4 +1,8 @@
 /*
+	SPDX-FileCopyrightText: 2011  Andre Somers <andre@familiesomers.nl>
+	SPDX-License-Identifier: BSD-3-Clause
+*/
+/*
 Copyright (c) 2011, Andre Somers
 All rights reserved.
 
