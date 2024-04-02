@@ -26,56 +26,62 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <QProcess>
-
-// Args include.
-#include <args-parser/all.hpp>
+#include <QCommandLineOption>
+#include <QCommandLineParser>
 
 
 int main( int argc, char ** argv )
 {
-	QVector< Args::String > authorName;
+	QCoreApplication app( argc, argv );
+	
+	
+	QStringList authorName;
 	QString beforeDate;
 	QString afterDate;
-
-	try {
-		Args::CmdLine cmd;
-
-		cmd.addMultiArg( QLatin1Char( 'a' ), QLatin1String( "author" ),
-			true, true, QLatin1String( "Author's name. Can be defined more then "
-				"one time to specify different authors of the selection." ) )
-			.addArgWithNameOnly( QLatin1String( "after" ), true, false,
-				QLatin1String( "Show stat for commits more recent "
-					"than a specific date. Use git format of the date." ) )
-			.addArgWithNameOnly( QLatin1String( "before" ), true, false,
-				QLatin1String( "Show stat for commits older than "
-					"a specific date. Use git format of the date." ) )
-			.addHelp( true, argv[ 0 ], QLatin1String( "Show statistics "
-				"for Git repository." ) );
-
-		cmd.parse( argc, argv );
-
-		authorName = cmd.values( QLatin1String( "-a" ) );
-
-		if( cmd.isDefined( QLatin1String( "--before" ) ) )
-			beforeDate = cmd.value( QLatin1String( "--before" ) );
-
-		if( cmd.isDefined( QLatin1String( "--after" ) ) )
-			afterDate = cmd.value( QLatin1String( "--after" ) );
-	}
-	catch( const Args::HelpHasBeenPrintedException & )
+	
+	QCommandLineParser parser;
+	
+	QCommandLineOption authorOpt( QStringList() << QStringLiteral( "a" )
+			<< QStringLiteral( "author" ),
+		QStringLiteral( "Author's name. Can be defined more then "
+			"one time to specify different authors of the selection." ),
+		QStringLiteral( "name or email" ) );
+	parser.addOption( authorOpt );
+	
+	QCommandLineOption bDateOpt( QStringLiteral( "before" ),
+		QStringLiteral( "Show stat for commits older than "
+			"a specific date. Use git format of the date." ),
+		QStringLiteral( "date" ) );
+	parser.addOption( bDateOpt );
+	
+	QCommandLineOption aDateOpt( QStringLiteral( "after" ),
+		QStringLiteral( "Show stat for commits more recent "
+			"than a specific date. Use git format of the date." ),
+		QStringLiteral( "date" ) );
+	parser.addOption( aDateOpt );
+	
+	parser.addHelpOption();
+	parser.setApplicationDescription( QStringLiteral(
+		"Maybe useful git statistics for the given author" ) );
+	
+	parser.process( app );
+	
+	if( !parser.isSet( QStringLiteral( "author" ) ) )
 	{
-		return 0;
-	}
-	catch( const Args::BaseException & x )
-	{
-		QTextStream out( stdout );
-
-		out << x.desc() << "\n";
-
+		qDebug() << "Please define author.";
+		
+		qDebug() << parser.helpText();
+		
 		return 1;
 	}
+	else
+		authorName = parser.values( QStringLiteral( "author" ) );
+	
+	if( parser.isSet( QStringLiteral( "before" ) ) )
+		beforeDate = parser.value( QStringLiteral( "before" ) );
 
-	QCoreApplication app( argc, argv );
+	if( parser.isSet( QStringLiteral( "after" ) ) )
+		afterDate = parser.value( QStringLiteral( "after" ) );
 
 	QProcess p;
 
