@@ -10,3 +10,4 @@
 /**/ui_*.h
 /**/qrc_*.cpp
 /**/*.user*
+build*

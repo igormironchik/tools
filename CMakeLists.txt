@@ -16,7 +16,6 @@ project( tools )
 enable_testing()
 
 add_subdirectory( CodeForWeb )
-add_subdirectory( GitStat )
 add_subdirectory( LicenseChange )
 add_subdirectory( Magnifier )
 add_subdirectory( PhraseGen )
