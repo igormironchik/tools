@@ -63,12 +63,6 @@ public:
 	{
 	}
 	
-private slots:
-	void onCollapsedExpanded( const QModelIndex & )
-	{
-		m_view->header()->resizeSections( QHeaderView::ResizeToContents );
-	}
-	
 private:
 	//! Init.
 	void init()
@@ -86,6 +80,7 @@ private:
 		vb1->addWidget( m_filter );
 
 		m_view = new QTreeView( w1 );
+        m_view->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 		vb1->addWidget( m_view );
 
 		m_model = new QFileSystemModel( this );
@@ -98,10 +93,6 @@ private:
 		m_proxy->setSourceModel( m_model );
 
 		m_view->setModel( m_proxy );
-		m_view->header()->resizeSections( QHeaderView::ResizeToContents );
-		
-		connect( m_view, &QTreeView::collapsed, this, &CentralWidget::onCollapsedExpanded );
-		connect( m_view, &QTreeView::expanded, this, &CentralWidget::onCollapsedExpanded );
 
 		l->addWidget( w1 );
 
